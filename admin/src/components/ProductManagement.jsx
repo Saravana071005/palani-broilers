@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import axios from 'axios'
+const API_URL = 'https://palani-broilers-api.vercel.app'
 
 function ProductManagement() {
   const [products, setProducts] = useState([])
@@ -14,7 +15,7 @@ function ProductManagement() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('/api/products')
+      const response = await axios.get(`${API_URL}/api/products`)
       setProducts(response.data)
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -27,9 +28,9 @@ function ProductManagement() {
     
     try {
       if (editingProduct) {
-        await axios.put(`/api/products/${editingProduct._id}`, formData)
+        await axios.put(`${API_URL}/api/products/${editingProduct._id}`, formData)
       } else {
-        await axios.post('/api/products', formData)
+        await axios.post(`${API_URL}/api/products`, formData)
       }
       fetchProducts()
       setShowForm(false)
@@ -67,7 +68,7 @@ function ProductManagement() {
   const handleDeleteProduct = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await axios.delete(`/api/products/${id}`)
+        await axios.delete(`${API_URL}/api/products/${id}`)
         fetchProducts()
       } catch (error) {
         console.error('Error deleting product:', error)

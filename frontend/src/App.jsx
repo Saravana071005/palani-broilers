@@ -4,6 +4,7 @@ import ProductList from './components/ProductList'
 import ContactSection from './components/ContactSection'
 import AppModal from './components/AppModal'
 import axios from 'axios'
+const API_URL = 'https://palani-broilers-api.vercel.app'
 
 function App() {
   const [products, setProducts] = useState([])
@@ -20,7 +21,7 @@ function App() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('/api/products', {
+      const response = await axios.get(`${API_URL}/api/products`, {
         params: { category: selectedCategory }
       })
       setProducts(response.data)
@@ -31,7 +32,7 @@ function App() {
 
   const fetchContact = async () => {
     try {
-      const response = await axios.get('/api/contact')
+      const response = await axios.get(`${API_URL}/api/contact`)
       setContact(response.data)
     } catch (error) {
       console.error('Error fetching contact:', error)
@@ -51,7 +52,7 @@ function App() {
 
   const handleDownloadApp = async () => {
     try {
-      const response = await axios.get('/api/download-apk', {
+      const response = await axios.get(`${API_URL}/api/download-apk`, {
         responseType: 'blob'
       })
       const url = window.URL.createObjectURL(new Blob([response.data]))
