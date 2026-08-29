@@ -2,38 +2,37 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config();
+
+require('dotenv').config({
+  path: path.join(__dirname, '.env')
+});
+
 
 const Product = require('./models/Product');
 const Contact = require('./models/Contact');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const storage = multer.memoryStorage();
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024
   }
 });
-
-const upload = multer({ storage: storage });
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -54,47 +53,51 @@ app.get('/', (req, res) => {
   });
 });
 
+const uploadToCloudinary = (file) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'palani-broilers/products',
+        resource_type: 'image'
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.secure_url);
+      }
+    );
+
+    stream.end(file.buffer);
+  });
+};
+
 // Product Routes
-app.get('/api/products', async (req, res) => {
-  try {
-    const { category } = req.query;
-    const filter = category && category !== 'all' ? { category } : {};
-    const products = await Product.find(filter).sort({ createdAt: -1 });
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.get('/api/products/:id', async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
 app.post('/api/products', upload.single('image'), async (req, res) => {
   try {
+    let imageUrl = '';
+
+    if (req.file) {
+      imageUrl = await uploadToCloudinary(req.file);
+    }
+
     const productData = {
       nameTamil: req.body.nameTamil,
       nameEnglish: req.body.nameEnglish,
-      price: parseFloat(req.body.price),
-      unit: req.body.unit || 'kg',
-      category: req.body.category || 'all',
+      price: req.body.price,
+      unit: req.body.unit,
+      category: req.body.category,
       lowStock: req.body.lowStock === 'true',
-      imageUrl: req.file ? `/uploads/${req.file.filename}` : ''
+      imageUrl
     };
 
     const product = new Product(productData);
     const savedProduct = await product.save();
+
     res.status(201).json(savedProduct);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error saving product:', error);
+    res.status(500).json({
+      message: error.message
+    });
   }
 });
 
@@ -103,29 +106,34 @@ app.put('/api/products/:id', upload.single('image'), async (req, res) => {
     const updateData = {
       nameTamil: req.body.nameTamil,
       nameEnglish: req.body.nameEnglish,
-      price: parseFloat(req.body.price),
-      unit: req.body.unit || 'kg',
-      category: req.body.category || 'all',
+      price: req.body.price,
+      unit: req.body.unit,
+      category: req.body.category,
       lowStock: req.body.lowStock === 'true'
     };
 
     if (req.file) {
-      updateData.imageUrl = `/uploads/${req.file.filename}`;
+      updateData.imageUrl = await uploadToCloudinary(req.file);
     }
 
-    const product = await Product.findByIdAndUpdate(
+    const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true, runValidators: true }
+      { new: true }
     );
 
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+    if (!updatedProduct) {
+      return res.status(404).json({
+        message: 'Product not found'
+      });
     }
 
-    res.json(product);
+    res.json(updatedProduct);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error updating product:', error);
+    res.status(500).json({
+      message: error.message
+    });
   }
 });
 
@@ -138,7 +146,26 @@ app.delete('/api/products/:id', async (req, res) => {
 
     // Delete image file if exists
     if (product.imageUrl) {
-      const imagePath = path.join(__dirname, product.imageUrl);
+      app.delete('/api/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        message: 'Product not found'
+      });
+    }
+
+    res.json({
+      message: 'Product deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    res.status(500).json({
+      message: error.message
+    });
+  }
+});
       if (fs.existsSync(imagePath)) {
         fs.unlinkSync(imagePath);
       }
