@@ -50,22 +50,13 @@ function App() {
     setShowModal(false)
   }
 
-  const handleDownloadApp = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/download-apk`, {
-        responseType: 'blob'
-      })
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', 'palani-broilers-app.apk')
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-    } catch (error) {
-      console.error('Error downloading APK:', error)
-      alert('Error downloading app. Please try again.')
-    }
+  const handleDownloadApp = () => {
+    const link = document.createElement('a')
+    link.href = '/palani-broilers.apk'
+    link.download = 'palani-broilers.apk'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
     setShowModal(false)
   }
 
