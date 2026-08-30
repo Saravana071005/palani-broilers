@@ -7,7 +7,7 @@ function Hero() {
       <div className="hero-content">
         <div className="hero-kicker"><Sparkles size={15} /><span>Palani Broilers - Thanjavur</span></div>
         <p className="hero-tamil">பழனி பிராய்லர்ஸ்</p>
-        <h1 id="hero-title">Our Products, brought into focus.</h1>
+        <h1 id="hero-title">தரம் மற்றும் நம்பிக்கை</h1>
         <p>Explore the current Palani Broilers selection through a richer, more immersive product experience.</p>
         <a className="hero-cta" href="#products">Explore products <ArrowDown size={18} /></a>
       </div>
