@@ -605,20 +605,3 @@ app.get('/api/download-apk', (req, res) => {
 
 });
 
-
-// ============================================================
-//                         START SERVER
-// ============================================================
-
-app.listen(PORT, () => {
-
-  console.log(
-    `Server is running on port ${PORT}`
-  );
-
-});
-
-
-// Export app
-
-module.exports = app;
