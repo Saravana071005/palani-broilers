@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react'
 import axios from 'axios'
 
+const API_URL = 'https://palani-broilers-api.vercel.app'
+
 function AdminPanel() {
   const [products, setProducts] = useState([])
   const [contact, setContact] = useState(null)
@@ -16,7 +18,7 @@ function AdminPanel() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('/api/products')
+      const response = await axios.get(`${API_URL}/api/products`)
       setProducts(response.data)
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -25,7 +27,7 @@ function AdminPanel() {
 
   const fetchContact = async () => {
     try {
-      const response = await axios.get('/api/contact')
+      const response = await axios.get(`${API_URL}/api/contact`)
       setContact(response.data)
     } catch (error) {
       console.error('Error fetching contact:', error)
@@ -38,9 +40,9 @@ function AdminPanel() {
     
     try {
       if (editingProduct) {
-        await axios.put(`/api/products/${editingProduct._id}`, formData)
+        await axios.put(`${API_URL}/api/products/${editingProduct._id}`, formData)
       } else {
-        await axios.post('/api/products', formData)
+        await axios.post(`${API_URL}/api/products`, formData)
       }
       fetchProducts()
       setShowProductForm(false)
@@ -54,7 +56,7 @@ function AdminPanel() {
   const handleDeleteProduct = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await axios.delete(`/api/products/${id}`)
+        await axios.delete(`${API_URL}/api/products/${id}`)
         fetchProducts()
       } catch (error) {
         console.error('Error deleting product:', error)
@@ -66,7 +68,7 @@ function AdminPanel() {
   const handleSaveContact = async (e) => {
     e.preventDefault()
     try {
-      await axios.put('/api/contact', Object.fromEntries(new FormData(e.target)))
+      await axios.put(`${API_URL}/api/contact`, Object.fromEntries(new FormData(e.target)))
       fetchContact()
       setEditingContact(false)
     } catch (error) {

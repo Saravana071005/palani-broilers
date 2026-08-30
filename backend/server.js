@@ -7,51 +7,69 @@ const path = require('path');
 require('dotenv').config({
   path: path.join(__dirname, '.env')
 });
-const fs = require('fs');
-
-require('dotenv').config();
 
 const Product = require('./models/Product');
 const Contact = require('./models/Contact');
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+let databaseConnectionPromise;
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(error => console.error('MongoDB connection error:', error));
+async function connectToDatabase() {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI is not configured');
+  }
+
+  if (!databaseConnectionPromise) {
+    databaseConnectionPromise = mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000
+    })
+      .then((connection) => {
+        console.log('MongoDB connected successfully');
+        return connection;
+      })
+      .catch((error) => {
+        databaseConnectionPromise = undefined;
+        throw error;
+      });
+  }
+
+  return databaseConnectionPromise;
+}
 
 
 // ================= CORS =================
 
-// ==================== CORS ====================
-const allowedOrigins = [
+const allowedOrigins = new Set([
   'https://palani-broilers.vercel.app',
   'https://palani-broilers-admin.vercel.app',
-  'https://palani-broilers-69jy4v6q7-saravana071005.vercel.app'
-];
+  ...((process.env.ALLOWED_ORIGINS || '').split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean))
+]);
 
-app.use(cors({
-<<<<<<< HEAD
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) {
       callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+      return;
     }
+
+    callback(new Error('Origin is not allowed by CORS'));
   },
-=======
-  origin: [
-    'https://palani-broilers-admin.vercel.app',
-    'https://palani-broilers.vercel.app',
-    'https://palani-broilers-2eyl4yiim-saravana071005.vercel.app'
-  ],
->>>>>>> c19a04f886b8daeff2f92f262ba35ae38b4751a5
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
+
 // ================= CLOUDINARY =================
 
 cloudinary.config({
@@ -72,13 +90,17 @@ const upload = multer({
 
 // ==================== MONGODB ====================
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('MongoDB connected successfully');
-  })
-  .catch((error) => {
+app.use(['/api/products', '/api/contact'], async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
     console.error('MongoDB connection error:', error);
-  });
+    res.status(500).json({
+      message: 'Database connection unavailable'
+    });
+  }
+});
 
 
 // ==================== ROOT ROUTE ====================
@@ -135,7 +157,10 @@ app.get('/api/products', async (req, res) => {
 
   try {
 
-    const products = await Product.find()
+    const { category } = req.query;
+    const filter = category && category !== 'all' ? { category } : {};
+
+    const products = await Product.find(filter)
       .sort({ createdAt: -1 });
 
     res.json(products);

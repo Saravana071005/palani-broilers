@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Edit, Save, X, Phone, Mail, MapPin, Plus, Trash2 } from 'lucide-react'
 import axios from 'axios'
 
+const API_URL = 'https://palani-broilers-api.vercel.app'
+
 function ContactManagement() {
   const [contact, setContact] = useState(null)
   const [editingMain, setEditingMain] = useState(false)
@@ -14,7 +16,7 @@ function ContactManagement() {
 
   const fetchContact = async () => {
     try {
-      const response = await axios.get('/api/contact')
+      const response = await axios.get(`${API_URL}/api/contact`)
       setContact(response.data)
     } catch (error) {
       console.error('Error fetching contact:', error)
@@ -24,7 +26,7 @@ function ContactManagement() {
   const handleSaveMain = async (e) => {
     e.preventDefault()
     try {
-      await axios.put('/api/contact', {
+      await axios.put(`${API_URL}/api/contact`, {
         mainPhone: e.target.mainPhone.value,
         mainEmail: e.target.mainEmail.value
       })
@@ -39,7 +41,7 @@ function ContactManagement() {
   const handleAddBranch = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('/api/contact/branches', {
+      await axios.post(`${API_URL}/api/contact/branches`, {
         name: e.target.name.value,
         phone: e.target.phone.value,
         email: e.target.email.value,
@@ -60,7 +62,7 @@ function ContactManagement() {
   const handleEditBranch = async (e, index) => {
     e.preventDefault()
     try {
-      await axios.put(`/api/contact/branches/${index}`, {
+      await axios.put(`${API_URL}/api/contact/branches/${index}`, {
         name: e.target.name.value,
         phone: e.target.phone.value,
         email: e.target.email.value,
@@ -81,7 +83,7 @@ function ContactManagement() {
   const handleDeleteBranch = async (index) => {
     if (window.confirm('Are you sure you want to delete this branch?')) {
       try {
-        await axios.delete(`/api/contact/branches/${index}`)
+        await axios.delete(`${API_URL}/api/contact/branches/${index}`)
         fetchContact()
       } catch (error) {
         console.error('Error deleting branch:', error)
