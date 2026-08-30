@@ -46,9 +46,9 @@ function App() {
   }
 
   const handleOpenApp = () => {
-    // Deep link to the app - replace with your actual app scheme
-    window.location.href = 'palanibroilers://product/' + selectedProduct._id
-    setShowModal(false)
+    // The repository has no verified Android package/deep-link configuration.
+    // Fall back to the bundled APK instead of attempting an unsupported scheme.
+    handleDownloadApp()
   }
 
 const handleDownloadApp = () => {
