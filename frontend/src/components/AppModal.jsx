@@ -1,6 +1,6 @@
 import { X, Smartphone, Download } from 'lucide-react'
 
-function AppModal({ product, onOpenApp, onDownloadApp, onClose }) {
+function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus }) {
   if (!product) return null
 
   return (
@@ -29,6 +29,12 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose }) {
         <p className="text-gray-600 text-center mb-6">
           Open our mobile app to view more details and place your order.
         </p>
+
+        {appOpenStatus && (
+          <p className="text-sm text-center text-gray-600 mb-4" role="status">
+            {appOpenStatus}
+          </p>
+        )}
 
         <div className="space-y-3">
           <button

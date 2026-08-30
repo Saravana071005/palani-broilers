@@ -6,6 +6,7 @@ import ContactSection from './components/ContactSection'
 import AppModal from './components/AppModal'
 import axios from 'axios'
 const API_URL = 'https://palani-broilers-api.vercel.app'
+const ANDROID_APP_INTENT = 'intent://open/#Intent;scheme=palaniposapp;package=com.example.palaniposapp;component=com.example.palaniposapp/.MainActivity;end'
 
 function App() {
   const [products, setProducts] = useState([])
@@ -14,6 +15,7 @@ function App() {
   const [showModal, setShowModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [appOpenStatus, setAppOpenStatus] = useState('')
 
   useEffect(() => {
     fetchProducts()
@@ -42,13 +44,34 @@ function App() {
 
   const handleProductClick = (product) => {
     setSelectedProduct(product)
+    setAppOpenStatus('')
     setShowModal(true)
   }
 
   const handleOpenApp = () => {
-    // The repository has no verified Android package/deep-link configuration.
-    // Fall back to the bundled APK instead of attempting an unsupported scheme.
-    handleDownloadApp()
+    if (!/Android/i.test(navigator.userAgent)) {
+      setAppOpenStatus('Open App is available on Android. Use Download App below to install the APK.')
+      return
+    }
+
+    setAppOpenStatus('Opening the Palani Broilers app…')
+    let appOpened = false
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        appOpened = true
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange, { once: true })
+    window.location.href = ANDROID_APP_INTENT
+
+    window.setTimeout(() => {
+      if (!appOpened) {
+        setAppOpenStatus('The app did not open. Use Download App below to install or update it.')
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }, 1200)
   }
 
 const handleDownloadApp = () => {
@@ -57,8 +80,9 @@ const handleDownloadApp = () => {
   link.download = 'palani-broilers.apk'
   document.body.appendChild(link)
   link.click()
-  link.remove()
-  setShowModal(false)
+    link.remove()
+    setAppOpenStatus('')
+    setShowModal(false)
 }
 
   const filteredProducts = products.filter(product => {
@@ -94,6 +118,7 @@ const handleDownloadApp = () => {
           onOpenApp={handleOpenApp}
           onDownloadApp={handleDownloadApp}
           onClose={() => setShowModal(false)}
+          appOpenStatus={appOpenStatus}
         />
       )}
     </div>
