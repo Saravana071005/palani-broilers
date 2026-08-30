@@ -1,45 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Boxes, ClipboardList, LayoutDashboard, Mail, Menu, X } from 'lucide-react'
 import Header from './components/Header'
 import ProductManagement from './components/ProductManagement'
 import ContactManagement from './components/ContactManagement'
 import axios from 'axios'
 
+const API_URL = 'https://palani-broilers-api.vercel.app'
+
+function Dashboard() {
+  const [products, setProducts] = useState([])
+  const [error, setError] = useState('')
+  useEffect(() => { axios.get(`${API_URL}/api/products`).then(({ data }) => setProducts(data)).catch((requestError) => setError(requestError.response?.data?.message || 'Unable to load dashboard data.')) }, [])
+  const categories = new Set(products.map((product) => product.category).filter(Boolean)).size
+  const recent = [...products].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0, 5)
+  const stats = [['Total Products', products.length, Boxes], ['Not Low Stock', products.filter((product) => !product.lowStock).length, ClipboardList], ['Low Stock', products.filter((product) => product.lowStock).length, LayoutDashboard], ['Categories', categories, LayoutDashboard]]
+  return <section className="admin-page"><div className="page-title"><span>Overview</span><h2>Dashboard</h2><p>Live information calculated from your current product data.</p></div>{error && <div className="admin-alert admin-alert-error">{error}</div>}<div className="admin-stats">{stats.map(([label, value, Icon]) => <article className="stat-card" key={label}><div><p>{label}</p><strong>{value}</strong></div><Icon size={22} /></article>)}</div><section className="admin-panel recent-panel"><div className="panel-heading"><div><span>Latest entries</span><h3>Recently Added</h3></div></div>{recent.length ? <div className="recent-list">{recent.map((product) => <div className="recent-row" key={product._id}>{product.imageUrl ? <img src={product.imageUrl} alt="" /> : <div className="thumb-placeholder">PB</div>}<div><strong>{product.nameTamil}</strong><small>{product.nameEnglish}</small></div><div><strong>₹{Number(product.price).toFixed(2)}</strong><small>{product.createdAt ? new Date(product.createdAt).toLocaleDateString() : 'Date unavailable'}</small></div></div>)}</div> : <p className="empty-copy">No products found.</p>}</section></section>
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState('products')
-
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex space-x-4 mb-6">
-          <button
-            onClick={() => setActiveTab('products')}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${
-              activeTab === 'products'
-                ? 'bg-orange-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Products
-          </button>
-          <button
-            onClick={() => setActiveTab('contact')}
-            className={`px-6 py-3 rounded-lg font-semibold transition ${
-              activeTab === 'contact'
-                ? 'bg-orange-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            Contact Details
-          </button>
-        </div>
-
-        {activeTab === 'products' && <ProductManagement />}
-        {activeTab === 'contact' && <ContactManagement />}
-      </main>
-    </div>
-  )
+  const [activeTab, setActiveTab] = useState('dashboard')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const navigation = [['dashboard', 'Dashboard', LayoutDashboard], ['products', 'Products', Boxes], ['contact', 'Contact Details', Mail]]
+  const selectTab = (tab) => { setActiveTab(tab); setMenuOpen(false) }
+  return <div className="admin-shell"><Header /><aside className={`admin-sidebar ${menuOpen ? 'admin-sidebar-open' : ''}`} aria-label="Admin navigation">{navigation.map(([id, label, Icon]) => <button key={id} onClick={() => selectTab(id)} className={activeTab === id ? 'nav-active' : ''}><Icon size={18} />{label}</button>)}</aside><button className="admin-menu-toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle admin navigation">{menuOpen ? <X /> : <Menu />}</button><main className="admin-main">{activeTab === 'dashboard' && <Dashboard />}{activeTab === 'products' && <ProductManagement />}{activeTab === 'contact' && <ContactManagement />}</main></div>
 }
 
 export default App
