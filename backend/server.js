@@ -605,3 +605,4 @@ app.get('/api/download-apk', (req, res) => {
 
 });
 
+module.exports = app;
