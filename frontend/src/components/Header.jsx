@@ -1,5 +1,3 @@
-import { Menu } from 'lucide-react'
-
 function Header() {
   return (
     <header className="bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg">
@@ -25,10 +23,6 @@ function Header() {
               Contact
             </a>
           </nav>
-
-          <button className="md:hidden text-white">
-            <Menu size={24} />
-          </button>
         </div>
       </div>
     </header>
