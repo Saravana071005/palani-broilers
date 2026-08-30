@@ -79,14 +79,8 @@ const uploadToCloudinary = (file) => {
     stream.end(file.buffer);
   });
 };
-app.use(cors({
-  origin: [
-    'https://palani-broilers-admin.vercel.app',
-    'https://palani-broilers.vercel.app'
-  ]
-}));
 
-app.use(express.json());
+
 // Product Routes
 app.post('/api/products', upload.single('image'), async (req, res) => {
   try {
