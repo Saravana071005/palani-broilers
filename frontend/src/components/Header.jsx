@@ -1,4 +1,4 @@
-import { ShoppingCart, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 
 function Header() {
   return (
@@ -24,10 +24,6 @@ function Header() {
             <a href="#contact" className="text-white hover:text-orange-200 transition">
               Contact
             </a>
-            <button className="bg-white text-orange-600 px-4 py-2 rounded-full font-semibold hover:bg-orange-100 transition flex items-center space-x-2">
-              <ShoppingCart size={20} />
-              <span>Cart</span>
-            </button>
           </nav>
 
           <button className="md:hidden text-white">
