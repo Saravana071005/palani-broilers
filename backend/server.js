@@ -3,29 +3,26 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const path = require('path');
+require('dotenv').config({
+  path: path.join(__dirname, '.env')
+});
+const fs = require('fs');
 
 require('dotenv').config();
 
 const Product = require('./models/Product');
-app.get('/api/products', async (req, res) => {
-  try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({
-      message: 'Failed to fetch products',
-      error: error.message
-    });
-  }
-});
 const Contact = require('./models/Contact');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(error => console.error('MongoDB connection error:', error));
 
 
-// ==================== CORS ====================
+// ================= CORS =================
 
 app.use(cors({
   origin: [
@@ -38,8 +35,7 @@ app.use(cors({
 
 app.use(express.json());
 
-
-// ==================== CLOUDINARY ====================
+// ================= CLOUDINARY =================
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -47,6 +43,21 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+// ================= GET PRODUCTS =================
+
+app.get('/api/products', async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+
+    res.status(500).json({
+      message: 'Failed to fetch products',
+      error: error.message
+    });
+  }
+});
 
 // ==================== MULTER ====================
 
