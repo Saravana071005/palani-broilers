@@ -1,6 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+
+app.use(cors({
+  origin: [
+    'https://palani-broilers-admin.vercel.app',
+    'https://palani-broilers.vercel.app'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
+}));
+
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
@@ -39,6 +49,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected successfully'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
+  
 // Root route
 app.get('/', (req, res) => {
   res.json({
@@ -69,7 +80,14 @@ const uploadToCloudinary = (file) => {
     stream.end(file.buffer);
   });
 };
+app.use(cors({
+  origin: [
+    'https://palani-broilers-admin.vercel.app',
+    'https://palani-broilers.vercel.app'
+  ]
+}));
 
+app.use(express.json());
 // Product Routes
 app.post('/api/products', upload.single('image'), async (req, res) => {
   try {
