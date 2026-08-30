@@ -27,7 +27,8 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use(cors({
   origin: [
     'https://palani-broilers-admin.vercel.app',
-    'https://palani-broilers.vercel.app'
+    'https://palani-broilers.vercel.app',
+    'https://palani-broilers-2eyl4yiim-saravana071005.vercel.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
