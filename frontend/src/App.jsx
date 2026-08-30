@@ -49,8 +49,13 @@ function App() {
   }
 
   const handleOpenApp = () => {
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      setAppOpenStatus('Palani Broilers APK is for Android devices. Please open this page on Android to install the app.')
+      return
+    }
+
     if (!/Android/i.test(navigator.userAgent)) {
-      setAppOpenStatus('Open App is available on Android. Use Download App below to install the APK.')
+      setAppOpenStatus('Palani Broilers APK is for Android devices. Open this page on Android to install the app.')
       return
     }
 
@@ -68,7 +73,7 @@ function App() {
 
     window.setTimeout(() => {
       if (!appOpened) {
-        setAppOpenStatus('The app did not open. Use Download App below to install or update it.')
+        setAppOpenStatus('Palani Broilers app is not installed or could not open. Use Download APK below to install or update it.')
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }, 1200)

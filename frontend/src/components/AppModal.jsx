@@ -50,7 +50,7 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus })
             className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-200 transition flex items-center justify-center space-x-2"
           >
             <Download size={20} />
-            <span>Download App</span>
+            <span>Download APK</span>
           </button>
         </div>
 
