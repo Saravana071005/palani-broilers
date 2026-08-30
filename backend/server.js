@@ -7,6 +7,18 @@ const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
 
 const Product = require('./models/Product');
+app.get('/api/products', async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({
+      message: 'Failed to fetch products',
+      error: error.message
+    });
+  }
+});
 const Contact = require('./models/Contact');
 
 const app = express();
