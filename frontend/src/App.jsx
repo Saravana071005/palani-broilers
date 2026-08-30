@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Header from './components/Header'
+import Hero from './components/Hero'
 import ProductList from './components/ProductList'
 import ContactSection from './components/ContactSection'
 import AppModal from './components/AppModal'
@@ -50,15 +51,15 @@ function App() {
     setShowModal(false)
   }
 
-  const handleDownloadApp = () => {
-    const link = document.createElement('a')
-    link.href = '/palani-broilers.apk'
-    link.download = 'palani-broilers.apk'
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    setShowModal(false)
-  }
+const handleDownloadApp = () => {
+  const link = document.createElement('a')
+  link.href = '/palani-broilers.apk'
+  link.download = 'palani-broilers.apk'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  setShowModal(false)
+}
 
   const filteredProducts = products.filter(product => {
     const searchLower = searchQuery.toLowerCase()
@@ -69,10 +70,11 @@ function App() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="app-shell">
       <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main>
+        <Hero />
+        <div className="site-content">
         <ProductList
           products={filteredProducts}
           onProductClick={handleProductClick}
@@ -82,7 +84,8 @@ function App() {
           onSearchChange={setSearchQuery}
         />
         
-        {contact && <ContactSection contact={contact} />}
+          {contact && <ContactSection contact={contact} />}
+        </div>
       </main>
 
       {showModal && (
