@@ -5,10 +5,7 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
 const fs = require('fs');
-
-require('dotenv').config({
-  path: path.join(__dirname, '.env')
-});
+require('dotenv').config();
 
 const Product = require('./models/Product');
 const Contact = require('./models/Contact');
@@ -16,12 +13,24 @@ const Contact = require('./models/Contact');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS
+app.use(cors({
+  origin: [
+    'https://palani-broilers-admin.vercel.app',
+    'https://palani-broilers.vercel.app'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
+}));
+
+app.use(express.json());
+
+// Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
-
 // CORS
 app.use(cors({
   origin: [
