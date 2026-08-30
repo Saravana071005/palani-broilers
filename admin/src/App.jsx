@@ -3,9 +3,11 @@ import { Boxes, ClipboardList, LayoutDashboard, Mail, Menu, X } from 'lucide-rea
 import Header from './components/Header'
 import ProductManagement from './components/ProductManagement'
 import ContactManagement from './components/ContactManagement'
+import Login from './components/Login'
 import axios from 'axios'
 
 const API_URL = 'https://palani-broilers-api.vercel.app'
+axios.defaults.withCredentials = true
 
 function Dashboard() {
   const [products, setProducts] = useState([])
@@ -20,9 +22,15 @@ function Dashboard() {
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [authenticated, setAuthenticated] = useState(null)
   const navigation = [['dashboard', 'Dashboard', LayoutDashboard], ['products', 'Products', Boxes], ['contact', 'Contact Details', Mail]]
   const selectTab = (tab) => { setActiveTab(tab); setMenuOpen(false) }
-  return <div className="admin-shell"><Header /><aside className={`admin-sidebar ${menuOpen ? 'admin-sidebar-open' : ''}`} aria-label="Admin navigation">{navigation.map(([id, label, Icon]) => <button key={id} onClick={() => selectTab(id)} className={activeTab === id ? 'nav-active' : ''}><Icon size={18} />{label}</button>)}</aside><button className="admin-menu-toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle admin navigation">{menuOpen ? <X /> : <Menu />}</button><main className="admin-main">{activeTab === 'dashboard' && <Dashboard />}{activeTab === 'products' && <ProductManagement />}{activeTab === 'contact' && <ContactManagement />}</main></div>
+  useEffect(() => { axios.get(`${API_URL}/api/admin/session`).then(() => setAuthenticated(true)).catch(() => setAuthenticated(false)) }, [])
+  const login = async (email, password) => { await axios.post(`${API_URL}/api/admin/login`, { email, password }); setAuthenticated(true) }
+  const logout = async () => { try { await axios.post(`${API_URL}/api/admin/logout`) } finally { setAuthenticated(false); setMenuOpen(false) } }
+  if (authenticated === null) return <main className="login-page"><p className="session-loading">Checking secure session…</p></main>
+  if (!authenticated) return <Login onLogin={login} />
+  return <div className="admin-shell"><Header onLogout={logout} /><aside className={`admin-sidebar ${menuOpen ? 'admin-sidebar-open' : ''}`} aria-label="Admin navigation">{navigation.map(([id, label, Icon]) => <button key={id} onClick={() => selectTab(id)} className={activeTab === id ? 'nav-active' : ''}><Icon size={18} />{label}</button>)}</aside><button className="admin-menu-toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle admin navigation">{menuOpen ? <X /> : <Menu />}</button><main className="admin-main">{activeTab === 'dashboard' && <Dashboard />}{activeTab === 'products' && <ProductManagement />}{activeTab === 'contact' && <ContactManagement />}</main></div>
 }
 
 export default App

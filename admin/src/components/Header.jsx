@@ -1,6 +1,6 @@
-import { Settings } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 
-function Header() {
+function Header({ onLogout }) {
   return (
     <header className="bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -16,6 +16,7 @@ function Header() {
               <p className="text-orange-100 text-sm">Admin Panel</p>
             </div>
           </div>
+          <button className="admin-logout" type="button" onClick={onLogout}><LogOut size={17} />Logout</button>
         </div>
       </div>
     </header>

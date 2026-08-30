@@ -4,6 +4,7 @@ const cors = require('cors');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
+const crypto = require('crypto');
 require('dotenv').config({
   path: path.join(__dirname, '.env')
 });
@@ -51,6 +52,64 @@ const allowedOrigins = new Set([
     .filter(Boolean))
 ]);
 
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.add('http://localhost:3001');
+}
+
+const ADMIN_COOKIE_NAME = 'palani_admin_session';
+const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
+
+function getCookie(req, name) {
+  const cookies = req.headers.cookie || '';
+  const match = cookies.split(';').map((item) => item.trim()).find((item) => item.startsWith(`${name}=`));
+  return match ? decodeURIComponent(match.slice(name.length + 1)) : undefined;
+}
+
+function hash(value) {
+  return crypto.createHash('sha256').update(value || '').digest();
+}
+
+function credentialsMatch(email, password) {
+  if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) return false;
+  return crypto.timingSafeEqual(hash(email), hash(process.env.ADMIN_EMAIL)) &&
+    crypto.timingSafeEqual(hash(password), hash(process.env.ADMIN_PASSWORD));
+}
+
+function signSession(payload) {
+  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', process.env.ADMIN_SESSION_SECRET).update(encodedPayload).digest('base64url');
+  return `${encodedPayload}.${signature}`;
+}
+
+function verifySession(token) {
+  if (!token || !process.env.ADMIN_SESSION_SECRET) return false;
+  const [encodedPayload, signature] = token.split('.');
+  if (!encodedPayload || !signature) return false;
+  const expectedSignature = crypto.createHmac('sha256', process.env.ADMIN_SESSION_SECRET).update(encodedPayload).digest('base64url');
+  if (signature.length !== expectedSignature.length || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8'));
+    return payload.sub === 'admin' && Number.isFinite(payload.exp) && payload.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function requireAdmin(req, res, next) {
+  if (!verifySession(getCookie(req, ADMIN_COOKIE_NAME))) {
+    return res.status(401).json({ message: 'Admin authentication is required' });
+  }
+  next();
+}
+
+function requireAdminOrigin(req, res, next) {
+  const origin = req.get('origin');
+  if (!origin || !allowedOrigins.has(origin)) {
+    return res.status(403).json({ message: 'Admin request origin is not allowed' });
+  }
+  next();
+}
+
 const corsOptions = {
   origin(origin, callback) {
     if (!origin || allowedOrigins.has(origin)) {
@@ -69,6 +128,42 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 app.use(express.json());
+
+// ==================== ADMIN AUTHENTICATION ====================
+
+app.post('/api/admin/login', requireAdminOrigin, (req, res) => {
+  if (!process.env.ADMIN_SESSION_SECRET || !process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+    return res.status(503).json({ message: 'Admin authentication is not configured' });
+  }
+
+  if (!credentialsMatch(req.body.email, req.body.password)) {
+    return res.status(401).json({ message: 'Invalid admin credentials' });
+  }
+
+  const expiresAt = Date.now() + SESSION_DURATION_MS;
+  res.cookie(ADMIN_COOKIE_NAME, signSession({ sub: 'admin', exp: expiresAt }), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: SESSION_DURATION_MS,
+    path: '/'
+  });
+  res.status(200).json({ authenticated: true });
+});
+
+app.get('/api/admin/session', requireAdminOrigin, requireAdmin, (req, res) => {
+  res.json({ authenticated: true });
+});
+
+app.post('/api/admin/logout', requireAdminOrigin, (req, res) => {
+  res.clearCookie(ADMIN_COOKIE_NAME, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/'
+  });
+  res.status(204).end();
+});
 
 // ================= CLOUDINARY =================
 
@@ -90,7 +185,7 @@ const upload = multer({
 
 // ==================== MONGODB ====================
 
-app.use(['/api/products', '/api/contact'], async (req, res, next) => {
+async function ensureDatabase(req, res, next) {
   try {
     await connectToDatabase();
     next();
@@ -100,6 +195,11 @@ app.use(['/api/products', '/api/contact'], async (req, res, next) => {
       message: 'Database connection unavailable'
     });
   }
+}
+
+app.use(['/api/products', '/api/contact'], (req, res, next) => {
+  if (req.method === 'GET') return ensureDatabase(req, res, next);
+  next();
 });
 
 
@@ -181,7 +281,7 @@ app.get('/api/products', async (req, res) => {
 
 // CREATE PRODUCT
 
-app.post('/api/products', upload.single('image'), async (req, res) => {
+app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), async (req, res) => {
 
   try {
 
@@ -232,7 +332,7 @@ app.post('/api/products', upload.single('image'), async (req, res) => {
 
 // UPDATE PRODUCT
 
-app.put('/api/products/:id', upload.single('image'), async (req, res) => {
+app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), async (req, res) => {
 
   try {
 
@@ -298,7 +398,7 @@ app.put('/api/products/:id', upload.single('image'), async (req, res) => {
 
 // DELETE PRODUCT
 
-app.delete('/api/products/:id', async (req, res) => {
+app.delete('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
 
   try {
 
@@ -386,7 +486,7 @@ app.get('/api/contact', async (req, res) => {
 
 // UPDATE CONTACT
 
-app.put('/api/contact', async (req, res) => {
+app.put('/api/contact', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
 
   try {
 
@@ -430,7 +530,7 @@ app.put('/api/contact', async (req, res) => {
 
 // ADD BRANCH
 
-app.post('/api/contact/branches', async (req, res) => {
+app.post('/api/contact/branches', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
 
   try {
 
@@ -477,7 +577,7 @@ app.post('/api/contact/branches', async (req, res) => {
 
 // UPDATE BRANCH
 
-app.put('/api/contact/branches/:index', async (req, res) => {
+app.put('/api/contact/branches/:index', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
 
   try {
 
@@ -534,7 +634,7 @@ app.put('/api/contact/branches/:index', async (req, res) => {
 
 // DELETE BRANCH
 
-app.delete('/api/contact/branches/:index', async (req, res) => {
+app.delete('/api/contact/branches/:index', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
 
   try {
 
