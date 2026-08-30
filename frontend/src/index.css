@@ -43,3 +43,45 @@ header .text-white, header .brand-tamil { color:#52251f !important; } header .te
 .site-content #contact .bg-gradient-to-r { background:linear-gradient(120deg,#f7e3d0,#fffaf4); border-color:#e6cbb6; }.site-content #contact h3,.site-content #contact h4 { color:#582d25; }.site-content #contact .text-gray-700,.site-content #contact .text-gray-600 { color:#765548; }.site-content #contact .text-orange-600 { color:#a52b26; }.site-content #contact .bg-gray-50 { border-color:#ead7c5; background:#fffaf5; }.app-shell .fixed .bg-white { color:#4b2b22; border-color:#e2c7b2; background:#fffdf9; }.app-shell .fixed .text-gray-800 { color:#542b23; }.app-shell .fixed .text-gray-600 { color:#765548; }.app-shell .fixed .text-orange-600 { color:#a52b26; }.app-shell .fixed .bg-orange-500 { color:#fff; background:#a52b26; }.app-shell .fixed .bg-gray-100 { color:#542b23; background:#f6e6d8; }
 @media(max-width:720px) { .hero-shell { width:calc(100% - 1rem); min-height:390px; margin:.75rem auto 1rem; padding:1.6rem 1.25rem; border-radius:1.35rem; }.hero-content h1 { font-size:clamp(2.15rem,10vw,3.3rem); }.hero-content p:not(.hero-tamil) { margin:1rem 0 1.3rem; font-size:.92rem; }.hero-visual { min-height:150px; }.hero-halo { width:175px; }.hero-logo-frame { width:112px; min-width:112px; }.site-content { width:calc(100% - 1rem); margin-bottom:2rem; }.site-content #products,.site-content #contact { padding:1rem; border-radius:1.1rem; }.site-content #products .flex.flex-wrap.gap-2 { flex-wrap:nowrap; overflow-x:auto; padding-bottom:.4rem; scrollbar-width:none; }.site-content #products .flex.flex-wrap.gap-2::-webkit-scrollbar { display:none; }.site-content #products .flex.flex-wrap.gap-2 button { flex:0 0 auto; min-height:42px; }.site-content #products .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }.site-content #products .h-48 { height:8.5rem; }.site-content #products .p-4 { padding:.75rem; }.site-content #products .p-4 h3 { font-size:.92rem; line-height:1.4; }.site-content #products .text-2xl { font-size:1.15rem; }.site-content #contact .grid { grid-template-columns:1fr; }.site-content #contact .p-5 { padding:1rem; } }
 @media(max-width:480px) { .site-content #products .grid { grid-template-columns:1fr; }.site-content #products .h-48 { height:12rem; }.site-content #products .p-4 { padding:1rem; }.site-content #products .p-4 h3 { font-size:1.05rem; }.site-content #products .text-2xl { font-size:1.35rem; } }
+
+/* Portrait hero: keep the existing logo animation in normal document flow below the CTA. */
+@media (max-width: 768px) {
+  .hero-shell {
+    height: auto;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-content: start;
+    gap: 2rem;
+  }
+
+  .hero-content {
+    min-width: 0;
+  }
+
+  .hero-content h1 {
+    max-width: 100%;
+  }
+
+  .hero-visual {
+    min-height: 0;
+    height: 148px;
+    width: 100%;
+    margin: 0;
+    overflow: visible;
+  }
+
+  .hero-logo-frame {
+    width: min(34vw, 128px);
+    min-width: 104px;
+    max-width: 128px;
+    height: auto;
+    transform-origin: center;
+  }
+
+  .hero-logo-frame img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+}
