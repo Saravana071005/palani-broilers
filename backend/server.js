@@ -24,14 +24,27 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // ================= CORS =================
 
+// ==================== CORS ====================
+
+const allowedOrigins = [
+  'https://palani-broilers.vercel.app',
+  'https://palani-broilers-admin.vercel.app',
+  'https://palani-broilers-1cjkg1dlb-saravana071005.vercel.app'
+];
+
 app.use(cors({
-  origin: [
-    'https://palani-broilers.vercel.app',
-    'https://palani-broilers-admin.vercel.app'
-  ],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
+
+app.use(express.json());
 // ================= CLOUDINARY =================
 
 cloudinary.config({
