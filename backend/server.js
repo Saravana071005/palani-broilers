@@ -25,11 +25,10 @@ mongoose.connect(process.env.MONGODB_URI)
 // ================= CORS =================
 
 // ==================== CORS ====================
-
 const allowedOrigins = [
   'https://palani-broilers.vercel.app',
   'https://palani-broilers-admin.vercel.app',
-  'https://palani-broilers-1cjkg1dlb-saravana071005.vercel.app'
+  'https://palani-broilers-69jy4v6q7-saravana071005.vercel.app'
 ];
 
 app.use(cors({
