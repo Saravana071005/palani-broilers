@@ -9,9 +9,6 @@ const branchSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  email: {
-    type: String
-  },
   address: {
     type: String,
     required: true
@@ -36,9 +33,6 @@ const contactSchema = new mongoose.Schema({
   mainPhone: {
     type: String,
     required: true
-  },
-  mainEmail: {
-    type: String
   },
   branches: [branchSchema]
 }, {

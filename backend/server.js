@@ -11,6 +11,7 @@ require('dotenv').config({
 
 const Product = require('./models/Product');
 const Contact = require('./models/Contact');
+const Category = require('./models/Category');
 
 const app = express();
 let databaseConnectionPromise;
@@ -202,6 +203,66 @@ app.use(['/api/products', '/api/contact'], (req, res, next) => {
   next();
 });
 
+const systemCategories = [
+  { slug: 'live', name: 'Live Chicken' },
+  { slug: 'sea-crabs', name: 'Sea Crabs' },
+  { slug: 'karuvaadi', name: 'Karuvaadi' }
+];
+
+function normalizeCategoryName(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
+function categorySlugFromName(name) {
+  const slug = name
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 72);
+
+  return slug || `category-${crypto.randomBytes(6).toString('hex')}`;
+}
+
+function categoryDisplayName(slug) {
+  const systemCategory = systemCategories.find((category) => category.slug === slug);
+  if (systemCategory) return systemCategory.name;
+  return String(slug).replace(/[-_]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+async function ensureCategoryRecords() {
+  await Promise.all(systemCategories.map((category) => Category.updateOne(
+    { slug: category.slug },
+    { $setOnInsert: { ...category, isSystem: true } },
+    { upsert: true }
+  )));
+
+  const productCategories = await Product.distinct('category', { category: { $nin: ['', null, 'all'] } });
+  await Promise.all(productCategories.map((slug) => Category.updateOne(
+    { slug },
+    { $setOnInsert: { slug, name: categoryDisplayName(slug), isSystem: true } },
+    { upsert: true }
+  )));
+}
+
+async function requireKnownCategory(req, res, next) {
+  const category = String(req.body.category || 'all').trim();
+  if (category === 'all') {
+    req.body.category = 'all';
+    return next();
+  }
+
+  try {
+    const exists = await Category.exists({ slug: category });
+    if (!exists) return res.status(400).json({ message: 'Select a valid product category' });
+    req.body.category = category;
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
 
 // ==================== ROOT ROUTE ====================
 
@@ -211,6 +272,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       products: '/api/products',
+      categories: '/api/categories',
       contact: '/api/contact',
       downloadApk: '/api/download-apk'
     },
@@ -247,6 +309,83 @@ function uploadToCloudinary(file) {
 
 
 // ============================================================
+//                        CATEGORY ROUTES
+// ============================================================
+
+app.get('/api/categories', ensureDatabase, async (req, res) => {
+  try {
+    await ensureCategoryRecords();
+    const categories = await Category.find().sort({ name: 1 }).lean();
+    const productCounts = await Product.aggregate([
+      { $group: { _id: '$category', productCount: { $sum: 1 } } }
+    ]);
+    const countBySlug = new Map(productCounts.map((item) => [item._id, item.productCount]));
+    res.json(categories.map((category) => ({
+      ...category,
+      productCount: countBySlug.get(category.slug) || 0
+    })));
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ message: 'Unable to fetch categories' });
+  }
+});
+
+app.post('/api/categories', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
+  const name = normalizeCategoryName(req.body.name);
+  if (!name) return res.status(400).json({ message: 'Category name is required' });
+
+  try {
+    await ensureCategoryRecords();
+    const duplicateName = await Category.findOne({ name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } });
+    if (duplicateName) return res.status(409).json({ message: 'A category with that name already exists' });
+
+    const slug = categorySlugFromName(name);
+    if (slug === 'all') return res.status(400).json({ message: '“All” is reserved for viewing every product' });
+    if (await Category.exists({ slug })) return res.status(409).json({ message: 'A category with that name already exists' });
+
+    const category = await Category.create({ name, slug });
+    res.status(201).json(category);
+  } catch (error) {
+    console.error('Error creating category:', error);
+    res.status(400).json({ message: error.code === 11000 ? 'A category with that name already exists' : 'Unable to create category' });
+  }
+});
+
+app.put('/api/categories/:id', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
+  const name = normalizeCategoryName(req.body.name);
+  if (!name) return res.status(400).json({ message: 'Category name is required' });
+
+  try {
+    const duplicateName = await Category.findOne({ _id: { $ne: req.params.id }, name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } });
+    if (duplicateName) return res.status(409).json({ message: 'A category with that name already exists' });
+
+    const category = await Category.findByIdAndUpdate(req.params.id, { name }, { new: true, runValidators: true });
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.json(category);
+  } catch (error) {
+    console.error('Error updating category:', error);
+    res.status(400).json({ message: 'Unable to update category' });
+  }
+});
+
+app.delete('/api/categories/:id', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    if (category.isSystem) return res.status(409).json({ message: 'This existing category is protected to preserve legacy product filtering' });
+
+    const productCount = await Product.countDocuments({ category: category.slug });
+    if (productCount > 0) return res.status(409).json({ message: `This category is used by ${productCount} product${productCount === 1 ? '' : 's'}. Reassign those products before deleting it.` });
+
+    await category.deleteOne();
+    res.json({ message: 'Category deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    res.status(500).json({ message: 'Unable to delete category' });
+  }
+});
+
+// ============================================================
 //                         PRODUCT ROUTES
 // ============================================================
 
@@ -281,7 +420,7 @@ app.get('/api/products', async (req, res) => {
 
 // CREATE PRODUCT
 
-app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), async (req, res) => {
+app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), requireKnownCategory, async (req, res) => {
 
   try {
 
@@ -332,7 +471,7 @@ app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, uplo
 
 // UPDATE PRODUCT
 
-app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), async (req, res) => {
+app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), requireKnownCategory, async (req, res) => {
 
   try {
 
@@ -443,7 +582,7 @@ app.get('/api/contact', async (req, res) => {
 
   try {
 
-    let contact = await Contact.findOne();
+    let contact = await Contact.findOne().select('-mainEmail -branches.email');
 
 
     if (!contact) {
@@ -457,8 +596,6 @@ app.get('/api/contact', async (req, res) => {
       contact = new Contact({
 
         mainPhone: 'Not set',
-
-        mainEmail: '',
 
         branches: []
 
@@ -490,16 +627,16 @@ app.put('/api/contact', requireAdminOrigin, requireAdmin, ensureDatabase, async 
 
   try {
 
-    let contact = await Contact.findOne();
+    let contact = await Contact.findOne().select('-mainEmail -branches.email');
 
 
     if (!contact) {
 
-      contact = new Contact(req.body);
+      contact = new Contact({ mainPhone: req.body.mainPhone });
 
     } else {
 
-      Object.assign(contact, req.body);
+      contact.mainPhone = req.body.mainPhone;
 
     }
 
@@ -534,7 +671,7 @@ app.post('/api/contact/branches', requireAdminOrigin, requireAdmin, ensureDataba
 
   try {
 
-    let contact = await Contact.findOne();
+    let contact = await Contact.findOne().select('-mainEmail -branches.email');
 
 
     if (!contact) {
@@ -543,15 +680,29 @@ app.post('/api/contact/branches', requireAdminOrigin, requireAdmin, ensureDataba
 
         mainPhone: 'Not set',
 
-        mainEmail: '',
-
-        branches: [req.body]
+        branches: [{
+          name: req.body.name,
+          phone: req.body.phone,
+          address: req.body.address,
+          city: req.body.city,
+          state: req.body.state,
+          pincode: req.body.pincode,
+          googleMapUrl: req.body.googleMapUrl
+        }]
 
       });
 
     } else {
 
-      contact.branches.push(req.body);
+      contact.branches.push({
+        name: req.body.name,
+        phone: req.body.phone,
+        address: req.body.address,
+        city: req.body.city,
+        state: req.body.state,
+        pincode: req.body.pincode,
+        googleMapUrl: req.body.googleMapUrl
+      });
 
     }
 
@@ -581,7 +732,7 @@ app.put('/api/contact/branches/:index', requireAdminOrigin, requireAdmin, ensure
 
   try {
 
-    const contact = await Contact.findOne();
+    const contact = await Contact.findOne().select('-mainEmail -branches.email');
 
 
     if (!contact) {
@@ -610,7 +761,15 @@ app.put('/api/contact/branches/:index', requireAdminOrigin, requireAdmin, ensure
     }
 
 
-    contact.branches[branchIndex] = req.body;
+    contact.branches[branchIndex] = {
+      name: req.body.name,
+      phone: req.body.phone,
+      address: req.body.address,
+      city: req.body.city,
+      state: req.body.state,
+      pincode: req.body.pincode,
+      googleMapUrl: req.body.googleMapUrl
+    };
 
 
     const updatedContact =
@@ -638,7 +797,7 @@ app.delete('/api/contact/branches/:index', requireAdminOrigin, requireAdmin, ens
 
   try {
 
-    const contact = await Contact.findOne();
+    const contact = await Contact.findOne().select('-mainEmail -branches.email');
 
 
     if (!contact) {

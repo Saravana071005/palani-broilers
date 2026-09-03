@@ -10,6 +10,7 @@ const ANDROID_APP_INTENT = 'intent://open/#Intent;scheme=palaniposapp;package=co
 
 function App() {
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
   const [contact, setContact] = useState(null)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [showModal, setShowModal] = useState(false)
@@ -21,6 +22,10 @@ function App() {
     fetchProducts()
     fetchContact()
   }, [selectedCategory])
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
 
   const fetchProducts = async () => {
     try {
@@ -39,6 +44,15 @@ function App() {
       setContact(response.data)
     } catch (error) {
       console.error('Error fetching contact:', error)
+    }
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/categories`)
+      setCategories(response.data)
+    } catch (error) {
+      console.error('Error fetching categories:', error)
     }
   }
 
@@ -106,6 +120,7 @@ const handleDownloadApp = () => {
         <div className="site-content">
         <ProductList
           products={filteredProducts}
+          categories={categories}
           onProductClick={handleProductClick}
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Edit, Save, X, Phone, Mail, MapPin, Plus, Trash2 } from 'lucide-react'
+import { Edit, Save, X, Phone, MapPin, Plus, Trash2 } from 'lucide-react'
 import axios from 'axios'
 
 const API_URL = 'https://palani-broilers-api.vercel.app'
@@ -27,8 +27,7 @@ function ContactManagement() {
     e.preventDefault()
     try {
       await axios.put(`${API_URL}/api/contact`, {
-        mainPhone: e.target.mainPhone.value,
-        mainEmail: e.target.mainEmail.value
+        mainPhone: e.target.mainPhone.value
       })
       fetchContact()
       setEditingMain(false)
@@ -44,7 +43,6 @@ function ContactManagement() {
       await axios.post(`${API_URL}/api/contact/branches`, {
         name: e.target.name.value,
         phone: e.target.phone.value,
-        email: e.target.email.value,
         address: e.target.address.value,
         city: e.target.city.value,
         state: e.target.state.value,
@@ -65,7 +63,6 @@ function ContactManagement() {
       await axios.put(`${API_URL}/api/contact/branches/${index}`, {
         name: e.target.name.value,
         phone: e.target.phone.value,
-        email: e.target.email.value,
         address: e.target.address.value,
         city: e.target.city.value,
         state: e.target.state.value,
@@ -126,14 +123,6 @@ function ContactManagement() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Main Email</label>
-                <input
-                  name="mainEmail"
-                  defaultValue={contact.mainEmail}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
             </div>
             <div className="flex space-x-2">
               <button
@@ -165,15 +154,6 @@ function ContactManagement() {
               </div>
             </div>
 
-            <div className="flex items-start space-x-4 bg-gray-50 p-4 rounded-xl">
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <Mail className="text-orange-600" size={24} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">Main Email</h3>
-                <p className="text-gray-600">{contact.mainEmail || 'Not set'}</p>
-              </div>
-            </div>
           </div>
         )}
       </div>
@@ -208,13 +188,6 @@ function ContactManagement() {
                 <input
                   name="phone"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  name="email"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
@@ -300,14 +273,6 @@ function ContactManagement() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input
-                        name="email"
-                        defaultValue={branch.email}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      />
-                    </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                       <input
@@ -377,12 +342,6 @@ function ContactManagement() {
                           <Phone size={16} className="text-orange-600" />
                           <span className="text-gray-600">{branch.phone}</span>
                         </div>
-                        {branch.email && (
-                          <div className="flex items-center space-x-2">
-                            <Mail size={16} className="text-orange-600" />
-                            <span className="text-gray-600">{branch.email}</span>
-                          </div>
-                        )}
                         <div className="flex items-start space-x-2">
                           <MapPin size={16} className="text-orange-600 mt-1" />
                           <span className="text-gray-600">

@@ -107,14 +107,6 @@ function AdminPanel() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  name="email"
-                  defaultValue={contact.email}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                 <input
@@ -177,7 +169,6 @@ function AdminPanel() {
         ) : (
           <div className="bg-gray-50 p-4 rounded-xl">
             <p><strong>Phone:</strong> {contact?.phone || 'Not set'}</p>
-            <p><strong>Email:</strong> {contact?.email || 'Not set'}</p>
             <p><strong>Address:</strong> {contact?.address || 'Not set'}</p>
             <p><strong>City:</strong> {contact?.city || 'Not set'}</p>
             <p><strong>State:</strong> {contact?.state || 'Not set'}</p>

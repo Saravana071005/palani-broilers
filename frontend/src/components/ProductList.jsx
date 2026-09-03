@@ -1,11 +1,9 @@
 import { Search } from 'lucide-react'
 
-function ProductList({ products, onProductClick, selectedCategory, onCategoryChange, searchQuery, onSearchChange }) {
-  const categories = [
+function ProductList({ products, categories, onProductClick, selectedCategory, onCategoryChange, searchQuery, onSearchChange }) {
+  const categoryOptions = [
     { id: 'all', name: 'All' },
-    { id: 'live', name: 'உயிர் கோழி (live)' },
-    { id: 'sea-crabs', name: 'கடல் நண்டுகள்' },
-    { id: 'karuvaadi', name: 'கருவாடு வகைகள் (karuvaadi)' }
+    ...categories.map((category) => ({ id: category.slug, name: category.name }))
   ]
 
   return (
@@ -27,7 +25,7 @@ function ProductList({ products, onProductClick, selectedCategory, onCategoryCha
 
         {/* Category Filters */}
         <div className="flex flex-wrap gap-2">
-          {categories.map((category) => (
+          {categoryOptions.map((category) => (
             <button
               key={category.id}
               onClick={() => onCategoryChange(category.id)}

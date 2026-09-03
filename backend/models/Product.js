@@ -19,7 +19,7 @@ const productSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['all', 'live', 'sea-crabs', 'karuvaadi'],
+    trim: true,
     default: 'all'
   },
   lowStock: {

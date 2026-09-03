@@ -5,14 +5,14 @@ A full-stack website for Palani Broilers business with product management, app i
 ## Features
 
 - **Product Catalog**: Display products with Tamil and English names, prices, and stock status
-- **Category Filtering**: Filter products by category (All, Live Chicken, Sea Crabs, Karuvaadi)
+- **Category Filtering**: Filter products by categories managed from the admin panel
 - **Search Functionality**: Search products by name
 - **App Integration**: Click on any product to open app or download the APK
 - **Admin Panel**: 
   - Add, edit, and delete products
   - Update product prices and stock status
   - Manage contact details and location information
-- **Contact Section**: Display phone, email, address, and Google Maps integration
+- **Contact Section**: Display phone, address, and Google Maps integration
 - **Responsive Design**: Works on desktop and mobile devices
 
 ## Tech Stack
@@ -114,6 +114,12 @@ The frontend will run on `http://localhost:3000`
 - `PUT /api/products/:id` - Update a product (with image upload)
 - `DELETE /api/products/:id` - Delete a product
 
+### Categories
+- `GET /api/categories` - Get categories and their product counts
+- `POST /api/categories` - Create a category (admin only)
+- `PUT /api/categories/:id` - Rename a category (admin only)
+- `DELETE /api/categories/:id` - Delete an unused custom category (admin only)
+
 ### Contact
 - `GET /api/contact` - Get contact details
 - `PUT /api/contact` - Update contact details
@@ -127,7 +133,8 @@ Access the admin panel by clicking the "Admin Panel" button in the top-right cor
 
 ### Features:
 - **Product Management**: Add, edit, delete products with image upload
-- **Contact Management**: Update phone, email, address, and Google Maps URL
+- **Contact Management**: Update phone, address, and Google Maps URL
+- **Category Management**: Add, rename, and safely remove custom product categories
 - **Real-time Updates**: Changes reflect immediately on the website
 
 ## App Integration

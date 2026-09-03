@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, Navigation } from 'lucide-react'
+import { Phone, MapPin, Navigation } from 'lucide-react'
 
 function ContactSection({ contact }) {
   if (!contact) return null
@@ -15,12 +15,6 @@ function ContactSection({ contact }) {
             <Phone size={20} className="text-orange-600" />
             <span className="text-gray-700">{contact.mainPhone || 'Not available'}</span>
           </div>
-          {contact.mainEmail && (
-            <div className="flex items-center space-x-3">
-              <Mail size={20} className="text-orange-600" />
-              <span className="text-gray-700">{contact.mainEmail}</span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -37,12 +31,6 @@ function ContactSection({ contact }) {
                     <Phone size={16} className="text-orange-600" />
                     <span className="text-gray-600">{branch.phone}</span>
                   </div>
-                  {branch.email && (
-                    <div className="flex items-center space-x-2">
-                      <Mail size={16} className="text-orange-600" />
-                      <span className="text-gray-600">{branch.email}</span>
-                    </div>
-                  )}
                   <div className="flex items-start space-x-2">
                     <MapPin size={16} className="text-orange-600 mt-1" />
                     <span className="text-gray-600">

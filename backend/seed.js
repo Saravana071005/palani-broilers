@@ -120,12 +120,10 @@ const seedProducts = [
 
 const seedContact = {
   mainPhone: '+91 9876543210',
-  mainEmail: 'info@palanibroilers.com',
   branches: [
     {
       name: 'Thanjavur Main Branch',
       phone: '+91 9876543210',
-      email: 'thanjavur@palanibroilers.com',
       address: 'Main Market, Near Bus Stand',
       city: 'Thanjavur',
       state: 'Tamil Nadu',
@@ -135,7 +133,6 @@ const seedContact = {
     {
       name: 'Trichy Branch',
       phone: '+91 9876543211',
-      email: 'trichy@palanibroilers.com',
       address: 'Srirangam Road, Near Railway Station',
       city: 'Trichy',
       state: 'Tamil Nadu',
@@ -145,7 +142,6 @@ const seedContact = {
     {
       name: 'Kumbakonam Branch',
       phone: '+91 9876543212',
-      email: 'kumbakonam@palanibroilers.com',
       address: 'Sarangapani Street, Near Temple',
       city: 'Kumbakonam',
       state: 'Tamil Nadu',
@@ -155,7 +151,6 @@ const seedContact = {
     {
       name: 'Madurai Branch',
       phone: '+91 9876543213',
-      email: 'madurai@palanibroilers.com',
       address: 'KK Nagar, Main Road',
       city: 'Madurai',
       state: 'Tamil Nadu',
@@ -165,7 +160,6 @@ const seedContact = {
     {
       name: 'Salem Branch',
       phone: '+91 9876543214',
-      email: 'salem@palanibroilers.com',
       address: 'Yercaud Main Road',
       city: 'Salem',
       state: 'Tamil Nadu',
@@ -175,7 +169,6 @@ const seedContact = {
     {
       name: 'Coimbatore Branch',
       phone: '+91 9876543215',
-      email: 'coimbatore@palanibroilers.com',
       address: 'Gandhipuram, Near Bus Stand',
       city: 'Coimbatore',
       state: 'Tamil Nadu',
@@ -185,7 +178,6 @@ const seedContact = {
     {
       name: 'Erode Branch',
       phone: '+91 9876543216',
-      email: 'erode@palanibroilers.com',
       address: 'Brough Road, Near Market',
       city: 'Erode',
       state: 'Tamil Nadu',
@@ -195,7 +187,6 @@ const seedContact = {
     {
       name: 'Karur Branch',
       phone: '+91 9876543217',
-      email: 'karur@palanibroilers.com',
       address: 'Main Bazaar, Near Railway Station',
       city: 'Karur',
       state: 'Tamil Nadu',
@@ -205,7 +196,6 @@ const seedContact = {
     {
       name: 'Pudukkottai Branch',
       phone: '+91 9876543218',
-      email: 'pudukkottai@palanibroilers.com',
       address: 'Main Road, Near Bus Stand',
       city: 'Pudukkottai',
       state: 'Tamil Nadu',
@@ -215,7 +205,6 @@ const seedContact = {
     {
       name: 'Ariyalur Branch',
       phone: '+91 9876543219',
-      email: 'ariyalur@palanibroilers.com',
       address: 'Market Street, Near Temple',
       city: 'Ariyalur',
       state: 'Tamil Nadu',
