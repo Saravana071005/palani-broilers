@@ -61,7 +61,11 @@ function ProductList({ products, categories, onProductClick, selectedCategory, o
                   <span className="text-4xl">🥩</span>
                 </div>
               )}
-              {product.lowStock && (
+              {product.stockStatus === 'out-of-stock' ? (
+                <div className="absolute top-3 right-3 bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  Out of Stock
+                </div>
+              ) : product.lowStock && (
                 <div className="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                   Low Stock
                 </div>

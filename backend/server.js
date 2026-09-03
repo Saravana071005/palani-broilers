@@ -618,6 +618,10 @@ app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, uplo
 
     }
 
+    const stockStatus = ['low-stock', 'out-of-stock'].includes(req.body.stockStatus)
+      ? req.body.stockStatus
+      : req.body.lowStock === 'true' ? 'low-stock' : 'in-stock';
+
     const productData = {
 
       nameTamil: req.body.nameTamil,
@@ -630,7 +634,9 @@ app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, uplo
 
       category: req.body.category || 'all',
 
-      lowStock: req.body.lowStock === 'true',
+      lowStock: stockStatus === 'low-stock',
+
+      stockStatus,
 
       imageUrl: imageUrl
 
@@ -661,6 +667,10 @@ app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, u
 
   try {
 
+    const stockStatus = ['low-stock', 'out-of-stock'].includes(req.body.stockStatus)
+      ? req.body.stockStatus
+      : req.body.lowStock === 'true' ? 'low-stock' : 'in-stock';
+
     const updateData = {
 
       nameTamil: req.body.nameTamil,
@@ -673,7 +683,9 @@ app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, u
 
       category: req.body.category || 'all',
 
-      lowStock: req.body.lowStock === 'true'
+      lowStock: stockStatus === 'low-stock',
+
+      stockStatus
 
     };
 
