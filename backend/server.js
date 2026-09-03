@@ -506,8 +506,6 @@ app.delete('/api/categories/:id', requireAdminOrigin, requireAdmin, ensureDataba
   try {
     const category = await Category.findById(req.params.id);
     if (!category) return res.status(404).json({ message: 'Category not found' });
-    if (category.isSystem) return res.status(409).json({ message: 'This existing category is protected to preserve legacy product filtering' });
-
     const productCount = await Product.countDocuments({ category: category.slug });
     if (productCount > 0) return res.status(409).json({ message: `This category is used by ${productCount} product${productCount === 1 ? '' : 's'}. Reassign those products before deleting it.` });
 
