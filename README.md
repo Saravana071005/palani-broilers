@@ -8,6 +8,7 @@ A full-stack website for Palani Broilers business with product management, app i
 - **Category Filtering**: Filter products by categories managed from the admin panel
 - **Search Functionality**: Search products by name
 - **App Integration**: Click on any product to open app or download the APK
+- **Product TXT Import**: Preview, validate, and securely import products and categories from a `.txt` file
 - **Admin Panel**: 
   - Add, edit, and delete products
   - Update product prices and stock status
@@ -120,6 +121,10 @@ The frontend will run on `http://localhost:3000`
 - `PUT /api/categories/:id` - Rename a category (admin only)
 - `DELETE /api/categories/:id` - Delete an unused custom category (admin only)
 
+### Product import
+- `POST /api/admin/import-products` - Preview or confirm a TXT product import (admin only; multipart field: `file`)
+- Use `CATEGORY: Name` followed by `PRODUCT:` blocks with `Tamil Name`, `English Name`, `Price`, and optional `Unit` fields. A product can also include its own `Category` field.
+
 ### Contact
 - `GET /api/contact` - Get contact details
 - `PUT /api/contact` - Update contact details
@@ -135,6 +140,7 @@ Access the admin panel by clicking the "Admin Panel" button in the top-right cor
 - **Product Management**: Add, edit, delete products with image upload
 - **Contact Management**: Update phone, address, and Google Maps URL
 - **Category Management**: Add, rename, and safely remove custom product categories
+- **Product Import**: Upload a TXT file, inspect its preview, then confirm a safe import
 - **Real-time Updates**: Changes reflect immediately on the website
 
 ## App Integration

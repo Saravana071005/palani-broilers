@@ -203,6 +203,25 @@ app.use(['/api/products', '/api/contact'], (req, res, next) => {
   next();
 });
 
+const IMPORT_MAX_BYTES = 256 * 1024;
+const IMPORT_MAX_PRODUCTS = 250;
+const importUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: IMPORT_MAX_BYTES, files: 1 },
+  fileFilter: (req, file, callback) => {
+    const isTextFile = file.originalname.toLowerCase().endsWith('.txt') || file.mimetype === 'text/plain';
+    callback(isTextFile ? null : new Error('Only .txt files can be imported'), isTextFile);
+  }
+});
+
+function handleImportUpload(req, res, next) {
+  importUpload.single('file')(req, res, (error) => {
+    if (!error) return next();
+    const message = error.code === 'LIMIT_FILE_SIZE' ? 'TXT file must be 256 KB or smaller' : error.message;
+    res.status(400).json({ message });
+  });
+}
+
 const systemCategories = [
   { slug: 'live', name: 'Live Chicken' },
   { slug: 'sea-crabs', name: 'Sea Crabs' },
@@ -229,6 +248,115 @@ function categoryDisplayName(slug) {
   const systemCategory = systemCategories.find((category) => category.slug === slug);
   if (systemCategory) return systemCategory.name;
   return String(slug).replace(/[-_]+/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function normalizeComparison(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+}
+
+function parseImportText(text) {
+  const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r?\n/);
+  const products = [];
+  const errors = [];
+  let activeCategory = '';
+  let currentProduct;
+
+  const finishProduct = () => {
+    if (!currentProduct) return;
+    if (Object.keys(currentProduct.fields).length) products.push(currentProduct);
+    currentProduct = undefined;
+  };
+  const beginProduct = (line) => {
+    if (!currentProduct) currentProduct = { line, fields: {}, category: activeCategory };
+    return currentProduct;
+  };
+
+  lines.forEach((sourceLine, index) => {
+    const lineNumber = index + 1;
+    const line = sourceLine.trim();
+    if (!line) return;
+    if (/^PRODUCT\s*:\s*$/i.test(line)) {
+      finishProduct();
+      currentProduct = { line: lineNumber, fields: {}, category: activeCategory };
+      return;
+    }
+    const categorySection = line.match(/^CATEGORY\s*:\s*(.+)$/i);
+    if (categorySection) {
+      finishProduct();
+      activeCategory = normalizeCategoryName(categorySection[1]);
+      if (!activeCategory) errors.push({ line: lineNumber, message: 'Category name cannot be empty' });
+      return;
+    }
+    const field = line.match(/^(Product\s+Index|Tamil\s+Name|English\s+Name|Price|Unit|Category)\s*:\s*(.*)$/i);
+    if (!field) {
+      errors.push({ line: lineNumber, message: 'Unrecognized line. Use CATEGORY:, PRODUCT:, or a supported field.' });
+      return;
+    }
+    const product = beginProduct(lineNumber);
+    const key = field[1].replace(/\s+/g, ' ').toLowerCase();
+    let value = field[2].trim();
+    if (key === 'unit') {
+      const inlineCategory = value.match(/^(.*?)\s+Category\s*:\s*(.*)$/i);
+      if (inlineCategory) {
+        value = inlineCategory[1].trim();
+        product.category = normalizeCategoryName(inlineCategory[2]);
+      }
+    }
+    if (key === 'category') product.category = normalizeCategoryName(value);
+    else product.fields[key] = value;
+  });
+  finishProduct();
+  return { products, errors, lineCount: lines.length };
+}
+
+async function inspectImport(file) {
+  if (!file) return { errors: [{ line: 0, message: 'Choose a TXT file first' }], products: [], summary: {} };
+  const text = file.buffer.toString('utf8');
+  if (!text.trim()) return { errors: [{ line: 0, message: 'TXT file is empty' }], products: [], summary: {} };
+  const parsed = parseImportText(text);
+  const errors = [...parsed.errors];
+  if (parsed.products.length > IMPORT_MAX_PRODUCTS) errors.push({ line: 0, message: `A TXT import can contain at most ${IMPORT_MAX_PRODUCTS} products` });
+  if (!parsed.products.length) errors.push({ line: 0, message: 'No PRODUCT blocks were found' });
+
+  const categories = await Category.find().lean();
+  const categoryByName = new Map(categories.map((category) => [normalizeComparison(category.name), category]));
+  const existingProducts = await Product.find().lean();
+  const existingByKey = new Map(existingProducts.map((product) => [`${normalizeComparison(product.nameTamil)}|${normalizeComparison(product.nameEnglish)}`, product]));
+  const seenProducts = new Set();
+  const preview = parsed.products.map((block, index) => {
+    const tamilName = normalizeCategoryName(block.fields['tamil name']);
+    const englishName = normalizeCategoryName(block.fields['english name']);
+    const price = Number(block.fields.price);
+    const unit = normalizeCategoryName(block.fields.unit) || 'kg';
+    const categoryName = normalizeCategoryName(block.category);
+    const productErrors = [];
+    if (!tamilName) productErrors.push('Tamil Name is required');
+    if (!englishName) productErrors.push('English Name is required');
+    if (!Number.isFinite(price) || price < 0) productErrors.push('Price must be a valid non-negative number');
+    if (!categoryName) productErrors.push('Category is required');
+    if (normalizeComparison(categoryName) === 'all') productErrors.push('“All” is reserved for viewing every product');
+    if (categoryName.length > 80) productErrors.push('Category must be 80 characters or fewer');
+    const productKey = `${normalizeComparison(tamilName)}|${normalizeComparison(englishName)}`;
+    if (tamilName && englishName && seenProducts.has(productKey)) productErrors.push('Duplicate product in this TXT file');
+    seenProducts.add(productKey);
+    productErrors.forEach((message) => errors.push({ line: block.line, product: englishName || tamilName || `Product ${index + 1}`, message }));
+    const existingProduct = existingByKey.get(productKey);
+    const existingCategory = categoryByName.get(normalizeComparison(categoryName));
+    return { line: block.line, productIndex: block.fields['product index'] || '', nameTamil: tamilName, nameEnglish: englishName, price, unit, categoryName, categorySlug: existingCategory?.slug || '', status: productErrors.length ? 'invalid' : existingProduct ? 'existing' : 'new', errors: productErrors, existingProductId: existingProduct?._id?.toString() || '' };
+  });
+  const categoryNames = [...new Set(preview.map((item) => item.categoryName).filter(Boolean))];
+  return {
+    errors,
+    products: preview,
+    summary: {
+      productsDetected: preview.length,
+      categoriesDetected: categoryNames.length,
+      newCategories: categoryNames.filter((name) => !categoryByName.has(normalizeComparison(name))).length,
+      existingCategories: categoryNames.filter((name) => categoryByName.has(normalizeComparison(name))).length,
+      existingProducts: preview.filter((item) => item.status === 'existing').length,
+      invalidProducts: preview.filter((item) => item.status === 'invalid').length
+    }
+  };
 }
 
 async function ensureCategoryRecords() {
@@ -382,6 +510,61 @@ app.delete('/api/categories/:id', requireAdminOrigin, requireAdmin, ensureDataba
   } catch (error) {
     console.error('Error deleting category:', error);
     res.status(500).json({ message: 'Unable to delete category' });
+  }
+});
+
+// ============================================================
+//                       PRODUCT IMPORT ROUTE
+// ============================================================
+
+app.post('/api/admin/import-products', requireAdminOrigin, requireAdmin, ensureDatabase, handleImportUpload, async (req, res) => {
+  try {
+    await ensureCategoryRecords();
+    const inspection = await inspectImport(req.file);
+    const isConfirm = req.body.confirm === 'true';
+    if (!isConfirm) return res.json({ mode: 'preview', ...inspection });
+    if (inspection.errors.length) return res.status(400).json({ message: 'Fix all TXT validation errors before importing', ...inspection });
+
+    const duplicateAction = req.body.duplicateAction === 'update' ? 'update' : 'skip';
+    const categoryByName = new Map((await Category.find()).map((category) => [normalizeComparison(category.name), category]));
+    let categoriesCreated = 0;
+    for (const product of inspection.products) {
+      const key = normalizeComparison(product.categoryName);
+      if (!categoryByName.has(key)) {
+        let slug = categorySlugFromName(product.categoryName);
+        while (await Category.exists({ slug })) slug = `${slug.slice(0, 82)}-${crypto.randomBytes(3).toString('hex')}`;
+        const category = await Category.create({ name: product.categoryName, slug });
+        categoryByName.set(key, category);
+        categoriesCreated += 1;
+      }
+    }
+
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+    for (const item of inspection.products) {
+      const category = categoryByName.get(normalizeComparison(item.categoryName));
+      const productData = { nameTamil: item.nameTamil, nameEnglish: item.nameEnglish, price: item.price, unit: item.unit, category: category.slug };
+      if (item.existingProductId) {
+        if (duplicateAction === 'skip') {
+          skipped += 1;
+          continue;
+        }
+        await Product.findByIdAndUpdate(item.existingProductId, productData, { runValidators: true });
+        updated += 1;
+      } else {
+        await Product.create(productData);
+        created += 1;
+      }
+    }
+
+    res.status(201).json({
+      message: 'Import completed',
+      summary: { productsCreated: created, productsUpdated: updated, productsSkipped: skipped, categoriesCreated, errors: 0 }
+    });
+  } catch (error) {
+    console.error('Product import error:', error);
+    res.status(400).json({ message: error.message || 'Unable to import products' });
   }
 });
 
