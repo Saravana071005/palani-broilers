@@ -224,7 +224,6 @@ function handleImportUpload(req, res, next) {
 
 const systemCategories = [
   { slug: 'live', name: 'Live Chicken' },
-  { slug: 'sea-crabs', name: 'Sea Crabs' },
   { slug: 'karuvaadi', name: 'Karuvaadi' }
 ];
 
