@@ -1,6 +1,6 @@
 import { X, Smartphone, Download } from 'lucide-react'
 
-function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus }) {
+function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus, appUnavailable }) {
   if (!product) return null
 
   return (
@@ -37,13 +37,13 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus })
         )}
 
         <div className="space-y-3">
-          <button
-            onClick={onOpenApp}
-            className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-600 transition flex items-center justify-center space-x-2"
-          >
-            <Smartphone size={20} />
-            <span>Open App</span>
-          </button>
+          {!appUnavailable && <button
+              onClick={onOpenApp}
+              className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-600 transition flex items-center justify-center space-x-2"
+            >
+              <Smartphone size={20} />
+              <span>Open App</span>
+            </button>}
 
           <button
             onClick={onDownloadApp}
@@ -52,6 +52,13 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus })
             <Download size={20} />
             <span>Download APK</span>
           </button>
+
+          {appUnavailable && <button
+              onClick={onClose}
+              className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
+            >
+              Cancel
+            </button>}
         </div>
 
         <p className="text-xs text-gray-400 text-center mt-4">

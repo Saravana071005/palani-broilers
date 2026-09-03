@@ -6,7 +6,7 @@ import ContactSection from './components/ContactSection'
 import AppModal from './components/AppModal'
 import axios from 'axios'
 const API_URL = 'https://palani-broilers-api.vercel.app'
-const ANDROID_APP_INTENT = 'intent://open/#Intent;scheme=palaniposapp;package=com.example.palaniposapp;component=com.example.palaniposapp/.MainActivity;end'
+const ANDROID_APP_INTENT = 'intent://open/#Intent;package=com.example.palaniposapp;component=com.example.palaniposapp/.MainActivity;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end'
 
 function App() {
   const [products, setProducts] = useState([])
@@ -17,6 +17,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [appOpenStatus, setAppOpenStatus] = useState('')
+  const [appUnavailable, setAppUnavailable] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -59,12 +60,13 @@ function App() {
   const handleProductClick = (product) => {
     setSelectedProduct(product)
     setAppOpenStatus('')
+    setAppUnavailable(false)
     setShowModal(true)
   }
 
   const handleOpenApp = () => {
     if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      setAppOpenStatus('Palani Broilers APK is for Android devices. Please open this page on Android to install the app.')
+      setAppOpenStatus('This application is currently available for Android.')
       return
     }
 
@@ -87,7 +89,8 @@ function App() {
 
     window.setTimeout(() => {
       if (!appOpened) {
-        setAppOpenStatus('Palani Broilers app is not installed or could not open. Use Download APK below to install or update it.')
+        setAppOpenStatus('Palani Broilers app is not installed.')
+        setAppUnavailable(true)
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }, 1200)
@@ -139,6 +142,7 @@ const handleDownloadApp = () => {
           onDownloadApp={handleDownloadApp}
           onClose={() => setShowModal(false)}
           appOpenStatus={appOpenStatus}
+          appUnavailable={appUnavailable}
         />
       )}
     </div>

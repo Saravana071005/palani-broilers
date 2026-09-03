@@ -141,10 +141,8 @@ Access the admin panel by clicking the "Admin Panel" button in the top-right cor
 
 When a user clicks on a product:
 1. A modal appears with "Open App" and "Download App" options
-2. **Open App**: Attempts to deep-link to the installed app using `palanibroilers://` scheme
-3. **Download App**: Downloads the APK file from the server
-
-Note: Update the deep-link URL scheme in `frontend/src/App.jsx` to match your actual app's scheme.
+2. **Open App**: Uses an Android explicit intent for the installed Palani Broilers app activity.
+3. **Download App**: Downloads `/palani-broilers.apk` from the frontend public folder when the app is unavailable.
 
 ## Project Structure
 
