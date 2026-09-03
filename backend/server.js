@@ -322,14 +322,18 @@ async function inspectImport(file) {
   const categoryByName = new Map(categories.map((category) => [normalizeComparison(category.name), category]));
   const existingProducts = await Product.find().lean();
   const existingByKey = new Map(existingProducts.map((product) => [`${normalizeComparison(product.nameTamil)}|${normalizeComparison(product.nameEnglish)}`, product]));
+  const existingByIndex = new Map(existingProducts.filter((product) => product.productIndex).map((product) => [normalizeComparison(product.productIndex), product]));
   const seenProducts = new Set();
+  const seenIndexes = new Set();
   const preview = parsed.products.map((block, index) => {
+    const productIndex = normalizeCategoryName(block.fields['product index']).toUpperCase();
     const tamilName = normalizeCategoryName(block.fields['tamil name']);
     const englishName = normalizeCategoryName(block.fields['english name']);
     const price = Number(block.fields.price);
     const unit = normalizeCategoryName(block.fields.unit) || 'kg';
     const categoryName = normalizeCategoryName(block.category);
     const productErrors = [];
+    if (!productIndex) productErrors.push('Product Index is required');
     if (!tamilName) productErrors.push('Tamil Name is required');
     if (!englishName) productErrors.push('English Name is required');
     if (!Number.isFinite(price) || price < 0) productErrors.push('Price must be a valid non-negative number');
@@ -337,12 +341,14 @@ async function inspectImport(file) {
     if (normalizeComparison(categoryName) === 'all') productErrors.push('“All” is reserved for viewing every product');
     if (categoryName.length > 80) productErrors.push('Category must be 80 characters or fewer');
     const productKey = `${normalizeComparison(tamilName)}|${normalizeComparison(englishName)}`;
+    if (productIndex && seenIndexes.has(normalizeComparison(productIndex))) productErrors.push('Duplicate Product Index in this TXT file');
     if (tamilName && englishName && seenProducts.has(productKey)) productErrors.push('Duplicate product in this TXT file');
+    if (productIndex) seenIndexes.add(normalizeComparison(productIndex));
     seenProducts.add(productKey);
     productErrors.forEach((message) => errors.push({ line: block.line, product: englishName || tamilName || `Product ${index + 1}`, message }));
-    const existingProduct = existingByKey.get(productKey);
+    const existingProduct = existingByIndex.get(normalizeComparison(productIndex)) || existingByKey.get(productKey);
     const existingCategory = categoryByName.get(normalizeComparison(categoryName));
-    return { line: block.line, productIndex: block.fields['product index'] || '', nameTamil: tamilName, nameEnglish: englishName, price, unit, categoryName, categorySlug: existingCategory?.slug || '', status: productErrors.length ? 'invalid' : existingProduct ? 'existing' : 'new', errors: productErrors, existingProductId: existingProduct?._id?.toString() || '' };
+    return { line: block.line, productIndex, nameTamil: tamilName, nameEnglish: englishName, price, unit, categoryName, categorySlug: existingCategory?.slug || '', status: productErrors.length ? 'invalid' : existingProduct ? 'existing' : 'new', errors: productErrors, existingProductId: existingProduct?._id?.toString() || '' };
   });
   const categoryNames = [...new Set(preview.map((item) => item.categoryName).filter(Boolean))];
   return {
@@ -544,7 +550,7 @@ app.post('/api/admin/import-products', requireAdminOrigin, requireAdmin, ensureD
     let skipped = 0;
     for (const item of inspection.products) {
       const category = categoryByName.get(normalizeComparison(item.categoryName));
-      const productData = { nameTamil: item.nameTamil, nameEnglish: item.nameEnglish, price: item.price, unit: item.unit, category: category.slug };
+      const productData = { productIndex: item.productIndex, nameTamil: item.nameTamil, nameEnglish: item.nameEnglish, price: item.price, unit: item.unit, category: category.slug };
       if (item.existingProductId) {
         if (duplicateAction === 'skip') {
           skipped += 1;

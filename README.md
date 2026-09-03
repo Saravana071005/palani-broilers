@@ -123,7 +123,7 @@ The frontend will run on `http://localhost:3000`
 
 ### Product import
 - `POST /api/admin/import-products` - Preview or confirm a TXT product import (admin only; multipart field: `file`)
-- Use `CATEGORY: Name` followed by `PRODUCT:` blocks with `Tamil Name`, `English Name`, `Price`, and optional `Unit` fields. A product can also include its own `Category` field.
+- Use `CATEGORY: Name` followed by `PRODUCT:` blocks with `Product Index`, `Tamil Name`, `English Name`, `Price`, and optional `Unit` fields. The required `Product Index` (for example, `PB-001`) is stored with the product and used first to detect existing products during future imports. A product can also include its own `Category` field.
 
 ### Contact
 - `GET /api/contact` - Get contact details

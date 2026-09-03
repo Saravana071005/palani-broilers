@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
+  productIndex: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    unique: true,
+    sparse: true,
+    maxlength: 50
+  },
   nameTamil: {
     type: String,
     required: true
