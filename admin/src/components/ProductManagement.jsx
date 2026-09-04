@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Edit, ImagePlus, Plus, Save, Search, Trash2, X } from 'lucide-react'
+import { Download, Edit, ImagePlus, Plus, Save, Search, Trash2, X } from 'lucide-react'
 import axios from 'axios'
 
 const API_URL = 'https://palani-broilers-api.vercel.app'
@@ -159,6 +159,36 @@ function ProductManagement() {
     setMessage('')
   }
 
+  const exportValue = (value) => String(value ?? '').replace(/[\r\n]+/g, ' ').trim()
+  const productIndexNumber = (product) => {
+    const match = exportValue(product.productIndex).match(/^PB-(\d+)$/i)
+    return match ? Number(match[1]) : Number.POSITIVE_INFINITY
+  }
+  const handleDownloadProducts = () => {
+    const text = [...products].sort((first, second) => {
+      const firstNumber = productIndexNumber(first)
+      const secondNumber = productIndexNumber(second)
+      if (firstNumber !== secondNumber) return firstNumber - secondNumber
+      return exportValue(first.productIndex).localeCompare(exportValue(second.productIndex))
+    }).map((product) => [
+      `Product Index: ${exportValue(product.productIndex)}`,
+      `Tamil Name: ${exportValue(product.nameTamil)}`,
+      `English Name: ${exportValue(product.nameEnglish)}`,
+      `Price: ${exportValue(product.price ?? 0)}`,
+      `Unit: ${exportValue(product.unit)}`,
+      `Category: ${exportValue(categoryName(product.category))}`
+    ].join('\n')).join('\n\nPRODUCT:\n\n')
+    const downloadUrl = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }))
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = 'palani-broilers-products.txt'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0)
+    setMessage('Product list downloaded as TXT.')
+  }
+
   return <section className="admin-page">
     <div className="page-title product-page-title">
       <div>
@@ -166,7 +196,10 @@ function ProductManagement() {
         <h2>Product Management</h2>
         <p>Change price, low stock, or out-of-stock status directly from each product.</p>
       </div>
-      <button className="primary-action" onClick={() => { resetForm(); setShowForm(true) }}><Plus size={18} />Add Product</button>
+      <div className="product-title-actions">
+        <button type="button" className="secondary-action" onClick={handleDownloadProducts} disabled={loading || !products.length}><Download size={18} />Download Products TXT</button>
+        <button type="button" className="primary-action" onClick={() => { resetForm(); setShowForm(true) }}><Plus size={18} />Add Product</button>
+      </div>
     </div>
     {message && <div className="admin-alert">{message}</div>}
 
