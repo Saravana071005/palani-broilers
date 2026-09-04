@@ -319,7 +319,9 @@ function parseImportText(text) {
       currentProduct = { line: lineNumber, fields: {}, category: activeCategory };
       return;
     }
-    const categorySection = line.match(/^CATEGORY\s*:\s*(.+)$/i);
+    // Uppercase CATEGORY: remains the existing category-section marker. Product
+    // fields use Category:, including the downloadable TXT format.
+    const categorySection = line.match(/^CATEGORY\s*:\s*(.*)$/);
     if (categorySection) {
       finishProduct();
       activeCategory = normalizeCategoryName(categorySection[1]);
@@ -334,12 +336,10 @@ function parseImportText(text) {
     const product = beginProduct(lineNumber);
     const key = field[1].replace(/\s+/g, ' ').toLowerCase();
     let value = field[2].trim();
-    if (key === 'unit') {
-      const inlineCategory = value.match(/^(.*?)\s+Category\s*:\s*(.*)$/i);
-      if (inlineCategory) {
-        value = inlineCategory[1].trim();
-        product.category = normalizeCategoryName(inlineCategory[2]);
-      }
+    const inlineCategory = key === 'category' ? null : value.match(/\s+Category\s*:\s*(.*)$/i);
+    if (inlineCategory) {
+      value = value.slice(0, inlineCategory.index).trim();
+      product.category = normalizeCategoryName(inlineCategory[1]);
     }
     if (key === 'category') product.category = normalizeCategoryName(value);
     else product.fields[key] = value;
