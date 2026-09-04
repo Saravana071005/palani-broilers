@@ -7,6 +7,7 @@ const productSchema = new mongoose.Schema({
     uppercase: true,
     unique: true,
     sparse: true,
+    match: [/^PB-\d{3,}$/, 'Product Index must use the format PB-001'],
     maxlength: 50
   },
   nameTamil: {

@@ -253,6 +253,46 @@ function normalizeComparison(value) {
   return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
 }
 
+function normalizeProductIndex(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
+function isValidProductIndex(value) {
+  return /^PB-\d{3,}$/.test(value);
+}
+
+async function getNextProductIndex() {
+  const indexes = await Product.distinct('productIndex', { productIndex: { $exists: true, $ne: '' } });
+  const highest = indexes.reduce((max, value) => {
+    const match = normalizeProductIndex(value).match(/^PB-(\d+)$/);
+    return match ? Math.max(max, Number(match[1])) : max;
+  }, 0);
+  return `PB-${String(highest + 1).padStart(3, '0')}`;
+}
+
+async function requireProductIndex(req, res, next) {
+  try {
+    const productIndex = normalizeProductIndex(req.body.productIndex);
+    if (!productIndex) {
+      if (req.method === 'POST') req.body.productIndex = await getNextProductIndex();
+      else return res.status(400).json({ message: 'Product Index is required' });
+    } else if (!isValidProductIndex(productIndex)) {
+      return res.status(400).json({ message: 'Product Index must use the format PB-001' });
+    } else {
+      req.body.productIndex = productIndex;
+    }
+
+    const duplicate = await Product.exists({
+      productIndex: req.body.productIndex,
+      ...(req.params.id ? { _id: { $ne: req.params.id } } : {})
+    });
+    if (duplicate) return res.status(409).json({ message: `Product Index ${req.body.productIndex} is already in use` });
+    next();
+  } catch (error) {
+    next(error);
+  }
+}
+
 function parseImportText(text) {
   const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r?\n/);
   const products = [];
@@ -606,7 +646,7 @@ app.get('/api/products', async (req, res) => {
 
 // CREATE PRODUCT
 
-app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), requireKnownCategory, async (req, res) => {
+app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), requireProductIndex, requireKnownCategory, async (req, res) => {
 
   try {
 
@@ -623,6 +663,8 @@ app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, uplo
       : req.body.lowStock === 'true' ? 'low-stock' : 'in-stock';
 
     const productData = {
+
+      productIndex: req.body.productIndex,
 
       nameTamil: req.body.nameTamil,
 
@@ -663,7 +705,7 @@ app.post('/api/products', requireAdminOrigin, requireAdmin, ensureDatabase, uplo
 
 // UPDATE PRODUCT
 
-app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), requireKnownCategory, async (req, res) => {
+app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, upload.single('image'), requireProductIndex, requireKnownCategory, async (req, res) => {
 
   try {
 
@@ -672,6 +714,8 @@ app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, u
       : req.body.lowStock === 'true' ? 'low-stock' : 'in-stock';
 
     const updateData = {
+
+      productIndex: req.body.productIndex,
 
       nameTamil: req.body.nameTamil,
 
@@ -694,6 +738,10 @@ app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, u
 
       updateData.imageUrl =
         await uploadToCloudinary(req.file);
+
+    } else if (req.body.removeImage === 'true') {
+
+      updateData.imageUrl = '';
 
     }
 
