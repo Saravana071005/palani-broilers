@@ -360,12 +360,10 @@ async function inspectImport(file) {
   const categories = await Category.find().lean();
   const categoryByName = new Map(categories.map((category) => [normalizeComparison(category.name), category]));
   const existingProducts = await Product.find().lean();
-  const existingByKey = new Map(existingProducts.map((product) => [`${normalizeComparison(product.nameTamil)}|${normalizeComparison(product.nameEnglish)}`, product]));
-  const existingByIndex = new Map(existingProducts.filter((product) => product.productIndex).map((product) => [normalizeComparison(product.productIndex), product]));
-  const seenProducts = new Set();
+  const existingByIndex = new Map(existingProducts.filter((product) => product.productIndex).map((product) => [normalizeProductIndex(product.productIndex), product]));
   const seenIndexes = new Set();
   const preview = parsed.products.map((block, index) => {
-    const productIndex = normalizeCategoryName(block.fields['product index']).toUpperCase();
+    const productIndex = normalizeProductIndex(block.fields['product index']);
     const tamilName = normalizeCategoryName(block.fields['tamil name']);
     const englishName = normalizeCategoryName(block.fields['english name']);
     const price = Number(block.fields.price);
@@ -379,13 +377,10 @@ async function inspectImport(file) {
     if (!categoryName) productErrors.push('Category is required');
     if (normalizeComparison(categoryName) === 'all') productErrors.push('“All” is reserved for viewing every product');
     if (categoryName.length > 80) productErrors.push('Category must be 80 characters or fewer');
-    const productKey = `${normalizeComparison(tamilName)}|${normalizeComparison(englishName)}`;
-    if (productIndex && seenIndexes.has(normalizeComparison(productIndex))) productErrors.push('Duplicate Product Index in this TXT file');
-    if (tamilName && englishName && seenProducts.has(productKey)) productErrors.push('Duplicate product in this TXT file');
-    if (productIndex) seenIndexes.add(normalizeComparison(productIndex));
-    seenProducts.add(productKey);
+    if (productIndex && seenIndexes.has(productIndex)) productErrors.push('Duplicate Product Index in this TXT file');
+    if (productIndex) seenIndexes.add(productIndex);
     productErrors.forEach((message) => errors.push({ line: block.line, product: englishName || tamilName || `Product ${index + 1}`, message }));
-    const existingProduct = existingByIndex.get(normalizeComparison(productIndex)) || existingByKey.get(productKey);
+    const existingProduct = existingByIndex.get(productIndex);
     const existingCategory = categoryByName.get(normalizeComparison(categoryName));
     return { line: block.line, productIndex, nameTamil: tamilName, nameEnglish: englishName, price, unit, categoryName, categorySlug: existingCategory?.slug || '', status: productErrors.length ? 'invalid' : existingProduct ? 'existing' : 'new', errors: productErrors, existingProductId: existingProduct?._id?.toString() || '' };
   });
