@@ -47,7 +47,7 @@ function ProductList({ products, categories, onProductClick, selectedCategory, o
           <div
             key={product._id}
             onClick={() => onProductClick(product)}
-            className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition transform hover:-translate-y-1"
+            className={`bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition transform hover:-translate-y-1 ${product.stockStatus === 'out-of-stock' || product.lowStock ? 'product-unavailable' : ''}`}
           >
             <div className="relative h-48 bg-gray-100">
               {product.imageUrl ? (
@@ -61,15 +61,11 @@ function ProductList({ products, categories, onProductClick, selectedCategory, o
                   <span className="text-4xl">🥩</span>
                 </div>
               )}
-              {product.stockStatus === 'out-of-stock' ? (
+              {product.stockStatus === 'out-of-stock' || product.lowStock ? (
                 <div className="absolute top-3 right-3 bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  Out of Stock
+                  OUT OF STOCK
                 </div>
-              ) : product.lowStock && (
-                <div className="absolute top-3 right-3 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  Low Stock
-                </div>
-              )}
+              ) : null}
             </div>
             
             <div className="p-4">

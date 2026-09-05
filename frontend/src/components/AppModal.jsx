@@ -1,6 +1,6 @@
-import { X, Smartphone, Download } from 'lucide-react'
+import { X, Smartphone, Download, HelpCircle } from 'lucide-react'
 
-function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus, appUnavailable }) {
+function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus, appUnavailable, onNeedHelp }) {
   if (!product) return null
 
   return (
@@ -26,9 +26,7 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus, a
           </p>
         </div>
 
-        <p className="text-gray-600 text-center mb-6">
-          Open our mobile app to view more details and place your order.
-        </p>
+        <p className="text-gray-600 text-center mb-6">Choose the option that suits you. Ordering continues safely inside the Android app.</p>
 
         {appOpenStatus && (
           <p className="text-sm text-center text-gray-600 mb-4" role="status">
@@ -36,30 +34,11 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus, a
           </p>
         )}
 
-        <div className="space-y-3">
-          {!appUnavailable && <button
-              onClick={onOpenApp}
-              className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-600 transition flex items-center justify-center space-x-2"
-            >
-              <Smartphone size={20} />
-              <span>Open App</span>
-            </button>}
-
-          <button
-            onClick={onDownloadApp}
-            className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-200 transition flex items-center justify-center space-x-2"
-          >
-            <Download size={20} />
-            <span>Download APK</span>
-          </button>
-
-          {appUnavailable && <button
-              onClick={onClose}
-              className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
-            >
-              Cancel
-            </button>}
+        <div className="app-choice-grid">
+          <div><strong>Already installed?</strong><span>Open Palani Broilers App</span>{!appUnavailable && <button onClick={onOpenApp} className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold"><Smartphone size={20} /><span>Open App</span></button>}</div>
+          <div><strong>New to Palani Broilers?</strong><span>Download the Android APK</span><button onClick={onDownloadApp} className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold"><Download size={20} /><span>Download App</span></button></div>
         </div>
+        <button onClick={onNeedHelp} className="modal-help"><HelpCircle size={17} /> Need Help?</button>
 
         <p className="text-xs text-gray-400 text-center mt-4">
           Don't have our app? Download it to get the best experience.

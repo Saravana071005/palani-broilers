@@ -4,6 +4,7 @@ import Hero from './components/Hero'
 import ProductList from './components/ProductList'
 import ContactSection from './components/ContactSection'
 import AppModal from './components/AppModal'
+import HelpSection from './components/HelpSection'
 import axios from 'axios'
 const API_URL = 'https://palani-broilers-api.vercel.app'
 const ANDROID_APP_INTENT = 'intent://open/#Intent;package=com.example.palaniposapp;component=com.example.palaniposapp/.MainActivity;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end'
@@ -113,7 +114,16 @@ const handleDownloadApp = () => {
       product.nameTamil.toLowerCase().includes(searchLower) ||
       product.nameEnglish.toLowerCase().includes(searchLower)
     )
+  }).sort((first, second) => {
+    const stockRank = (product) => product.stockStatus === 'out-of-stock' || product.lowStock ? 1 : 0
+    const indexNumber = (product) => Number(String(product.productIndex || '').match(/^PB-(\d+)$/i)?.[1] || Number.MAX_SAFE_INTEGER)
+    return stockRank(first) - stockRank(second) || indexNumber(first) - indexNumber(second)
   })
+
+  const openHelp = (target = 'help') => {
+    setShowModal(false)
+    requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
 
   return (
     <div className="app-shell">
@@ -132,6 +142,7 @@ const handleDownloadApp = () => {
         />
         
           {contact && <ContactSection contact={contact} />}
+          <HelpSection onDownloadApp={handleDownloadApp} />
         </div>
       </main>
 
@@ -143,6 +154,7 @@ const handleDownloadApp = () => {
           onClose={() => setShowModal(false)}
           appOpenStatus={appOpenStatus}
           appUnavailable={appUnavailable}
+          onNeedHelp={() => openHelp('app-help')}
         />
       )}
     </div>
