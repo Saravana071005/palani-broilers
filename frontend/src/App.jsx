@@ -121,9 +121,9 @@ const handleDownloadApp = () => {
   })
 
   const openHelp = (target = 'help') => {
-    const helpUrl = new URL(window.location.href)
-    helpUrl.hash = target
-    window.open(helpUrl.toString(), '_blank', 'noopener,noreferrer')
+    setShowModal(false)
+    window.dispatchEvent(new Event('palani-open-help'))
+    requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
   return (

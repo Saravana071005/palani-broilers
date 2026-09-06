@@ -3,6 +3,10 @@ import { useState } from 'react'
 function Header() {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
+  const showHelp = () => {
+    close()
+    window.dispatchEvent(new Event('palani-open-help'))
+  }
   return (
     <header className="bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -21,7 +25,7 @@ function Header() {
           
           <button className="mobile-menu" onClick={() => setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open ? <X /> : <Menu />}</button>
           <nav className={open ? 'site-nav site-nav-open' : 'site-nav'}>
-            <a onClick={close} href="#products">பொருட்கள்</a><a onClick={close} href="#contact">தொடர்பு</a><a onClick={close} href="#help" target="_blank" rel="noreferrer"><HelpCircle size={17} /> உதவி</a>
+            <a onClick={close} href="#products">பொருட்கள்</a><a onClick={close} href="#contact">தொடர்பு</a><a onClick={showHelp} href="#help"><HelpCircle size={17} /> உதவி ›</a>
           </nav>
         </div>
       </div>
