@@ -9,14 +9,14 @@ function ProductList({ products, categories, onProductClick, selectedCategory, o
   return (
     <section id="products" className="mb-12">
       <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Our Products</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">எங்கள் பொருட்கள்</h2>
         
         {/* Search Bar */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder="பொருட்களைத் தேடவும்..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -88,7 +88,7 @@ function ProductList({ products, categories, onProductClick, selectedCategory, o
 
       {products.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No products found</p>
+          <p className="text-gray-500 text-lg">பொருட்கள் கிடைக்கவில்லை</p>
         </div>
       )}
     </section>

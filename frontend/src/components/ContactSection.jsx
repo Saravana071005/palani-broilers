@@ -2,18 +2,19 @@ import { Phone, MapPin, Navigation } from 'lucide-react'
 
 function ContactSection({ contact }) {
   if (!contact) return null
+  const phoneLink = (phone) => `tel:${String(phone || '').replace(/[^\d+]/g, '')}`
 
   return (
     <section id="contact" className="bg-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Us</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">தொடர்பு கொள்ளுங்கள்</h2>
       
       {/* Main Contact */}
       <div className="mb-8 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Main Office</h3>
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">முதன்மை அலுவலகம்</h3>
         <div className="space-y-3">
           <div className="flex items-center space-x-3">
             <Phone size={20} className="text-orange-600" />
-            <span className="text-gray-700">{contact.mainPhone || 'Not available'}</span>
+            {contact.mainPhone ? <a className="text-gray-700" href={phoneLink(contact.mainPhone)}>{contact.mainPhone}</a> : <span className="text-gray-700">தகவல் இல்லை</span>}
           </div>
         </div>
       </div>
@@ -21,7 +22,7 @@ function ContactSection({ contact }) {
       {/* Branches */}
       {contact.branches && contact.branches.length > 0 && (
         <div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Our Branches ({contact.branches.length})</h3>
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">எங்கள் கிளைகள் ({contact.branches.length})</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {contact.branches.map((branch, index) => (
               <div key={index} className="bg-gray-50 rounded-xl p-5 hover:bg-gray-100 transition">
@@ -29,7 +30,7 @@ function ContactSection({ contact }) {
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Phone size={16} className="text-orange-600" />
-                    <span className="text-gray-600">{branch.phone}</span>
+                    <a className="text-gray-600" href={phoneLink(branch.phone)}>{branch.phone}</a>
                   </div>
                   <div className="flex items-start space-x-2">
                     <MapPin size={16} className="text-orange-600 mt-1" />
@@ -47,7 +48,7 @@ function ContactSection({ contact }) {
                       className="inline-flex items-center space-x-2 text-orange-600 hover:text-orange-700 transition mt-2"
                     >
                       <Navigation size={16} />
-                      <span>Get Directions</span>
+                      <span>வழிகாட்டி பெறவும்</span>
                     </a>
                   )}
                 </div>

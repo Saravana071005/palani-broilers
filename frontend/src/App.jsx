@@ -154,6 +154,7 @@ const handleDownloadApp = () => {
           onClose={() => setShowModal(false)}
           appOpenStatus={appOpenStatus}
           appUnavailable={appUnavailable}
+          contact={contact}
           onNeedHelp={() => openHelp('app-help')}
         />
       )}

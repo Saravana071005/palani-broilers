@@ -21,7 +21,7 @@ function Header() {
           
           <button className="mobile-menu" onClick={() => setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open ? <X /> : <Menu />}</button>
           <nav className={open ? 'site-nav site-nav-open' : 'site-nav'}>
-            <a onClick={close} href="#products">Products</a><a onClick={close} href="#contact">Contact</a><a onClick={close} href="#help"><HelpCircle size={17} /> Help</a>
+            <a onClick={close} href="#products">பொருட்கள்</a><a onClick={close} href="#contact">தொடர்பு</a><a onClick={close} href="#help"><HelpCircle size={17} /> உதவி</a>
           </nav>
         </div>
       </div>
