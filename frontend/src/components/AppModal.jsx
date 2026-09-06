@@ -35,7 +35,7 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus, a
           </p>
         </div>
 
-        <p className="text-gray-600 text-center mb-6">பொருளை ஆர்டர் செய்ய Palani Broilers Android செயலியைத் திறக்கவும்.</p>
+        <p className="text-gray-600 text-center mb-5">உங்களுக்கு வசதியான முறையில் ஆர்டர் செய்யுங்கள்</p>
 
         {appOpenStatus && (
           <p className="text-sm text-center text-gray-600 mb-4" role="status">
@@ -44,9 +44,13 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus, a
         )}
 
         <div className="app-choice-grid">
-          <div><strong>செயலி ஏற்கனவே உள்ளதா?</strong><span>Palani Broilers செயலியைத் திறக்கவும்</span>{!appUnavailable && <button onClick={onOpenApp} className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold"><Smartphone size={20} /><span>Open App</span></button>}</div>
-          <div><strong>செயலி இல்லையா?</strong><span>Android APK கோப்பை பதிவிறக்கவும்</span><button onClick={onDownloadApp} className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold"><Download size={20} /><span>Download App</span></button></div>
-          {phone && <a className="modal-call" href={`tel:${phone}`}><PhoneCall size={20} /><span>இப்போது அழைக்கவும்</span></a>}
+          {phone && <div className="order-action-card call-action-card">
+            <div className="action-card-heading"><span className="action-icon"><PhoneCall size={21} /></span><div><span className="fast-order-badge">விரைவான ஆர்டர்</span><strong>நேரடியாக ஆர்டர் செய்யுங்கள்</strong></div></div>
+            <span>எங்களை அழைத்து உங்கள் ஆர்டரை பதிவு செய்யுங்கள்</span>
+            <a className="modal-call" href={`tel:${phone}`}><PhoneCall size={20} /><span>இப்போது அழைக்கவும்</span></a>
+          </div>}
+          <div className="order-action-card app-action-card"><div className="action-card-heading"><span className="action-icon"><Smartphone size={20} /></span><strong>செயலி மூலம் ஆர்டர் செய்யுங்கள்</strong></div><span>Palani Broilers செயலியைத் திறக்கவும்</span>{!appUnavailable && <button onClick={onOpenApp} className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold"><Smartphone size={20} /><span>செயலியைத் திறக்கவும்</span></button>}</div>
+          <div className="order-action-card download-action-card"><div className="action-card-heading"><span className="action-icon"><Download size={20} /></span><strong>செயலி இல்லையா?</strong></div><span>Android APK-ஐ பதிவிறக்கம் செய்யுங்கள்</span><button onClick={onDownloadApp} className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold"><Download size={20} /><span>செயலியை பதிவிறக்கவும்</span></button></div>
         </div>
         <button onClick={onNeedHelp} className="modal-help"><HelpCircle size={17} /> உதவி வேண்டுமா?</button>
 
