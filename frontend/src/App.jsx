@@ -121,8 +121,9 @@ const handleDownloadApp = () => {
   })
 
   const openHelp = (target = 'help') => {
-    setShowModal(false)
-    requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    const helpUrl = new URL(window.location.href)
+    helpUrl.hash = target
+    window.open(helpUrl.toString(), '_blank', 'noopener,noreferrer')
   }
 
   return (
