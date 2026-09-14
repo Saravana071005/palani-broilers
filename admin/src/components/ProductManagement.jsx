@@ -163,19 +163,30 @@ function ProductManagement() {
     return match ? Number(match[1]) : Number.POSITIVE_INFINITY
   }
   const handleDownloadProducts = () => {
-    const text = [...products].sort((first, second) => {
+    const groupedByCategory = [...products].sort((first, second) => {
       const firstNumber = productIndexNumber(first)
       const secondNumber = productIndexNumber(second)
       if (firstNumber !== secondNumber) return firstNumber - secondNumber
       return exportValue(first.productIndex).localeCompare(exportValue(second.productIndex))
-    }).map((product) => [
-      `Product Index: ${exportValue(product.productIndex)}`,
-      `Tamil Name: ${exportValue(product.nameTamil)}`,
-      `English Name: ${exportValue(product.nameEnglish)}`,
-      `Price: ${exportValue(product.price ?? 0)}`,
-      `Unit: ${exportValue(product.unit)}`,
-      `Category: ${exportValue(categoryName(product.category))}`
-    ].join('\n')).join('\n\nPRODUCT:\n\n')
+    }).reduce((acc, product) => {
+      const catName = categoryName(product.category)
+      if (!acc[catName]) acc[catName] = []
+      acc[catName].push(product)
+      return acc
+    }, {})
+
+    const text = Object.entries(groupedByCategory).map(([categoryName, categoryProducts]) => {
+      const categorySection = `CATEGORY: ${categoryName}\n\n`
+      const productsSection = categoryProducts.map((product) => [
+        `PRODUCT:`,
+        `Product Index: ${exportValue(product.productIndex)}`,
+        `Tamil Name: ${exportValue(product.nameTamil)}`,
+        `English Name: ${exportValue(product.nameEnglish)}`,
+        `Unit: ${exportValue(product.unit)}`
+      ].join('\n')).join('\n\n')
+      return categorySection + productsSection
+    }).join('\n\n')
+
     const downloadUrl = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }))
     const link = document.createElement('a')
     link.href = downloadUrl

@@ -328,7 +328,7 @@ function parseImportText(text) {
       if (!activeCategory) errors.push({ line: lineNumber, message: 'Category name cannot be empty' });
       return;
     }
-    const field = line.match(/^(Product\s+Index|Tamil\s+Name|English\s+Name|Price|Unit|Category)\s*:\s*(.*)$/i);
+    const field = line.match(/^(Product\s+Index|Tamil\s+Name|English\s+Name|Unit|Category)\s*:\s*(.*)$/i);
     if (!field) {
       errors.push({ line: lineNumber, message: 'Unrecognized line. Use CATEGORY:, PRODUCT:, or a supported field.' });
       return;
@@ -373,7 +373,6 @@ async function inspectImport(file) {
     if (!productIndex) productErrors.push('Product Index is required');
     if (!tamilName) productErrors.push('Tamil Name is required');
     if (!englishName) productErrors.push('English Name is required');
-    if (!Number.isFinite(price) || price < 0) productErrors.push('Price must be a valid non-negative number');
     if (!categoryName) productErrors.push('Category is required');
     if (normalizeComparison(categoryName) === 'all') productErrors.push('“All” is reserved for viewing every product');
     if (categoryName.length > 80) productErrors.push('Category must be 80 characters or fewer');
@@ -582,15 +581,23 @@ app.post('/api/admin/import-products', requireAdminOrigin, requireAdmin, ensureD
     let skipped = 0;
     for (const item of inspection.products) {
       const category = categoryByName.get(normalizeComparison(item.categoryName));
-      const productData = { productIndex: item.productIndex, nameTamil: item.nameTamil, nameEnglish: item.nameEnglish, price: item.price, unit: item.unit, category: category.slug };
+      const productData = { productIndex: item.productIndex, nameTamil: item.nameTamil, nameEnglish: item.nameEnglish, unit: item.unit, category: category.slug };
       if (item.existingProductId) {
         if (duplicateAction === 'skip') {
           skipped += 1;
           continue;
         }
+        // Preserve existing price if not provided in import
+        const existingProduct = await Product.findById(item.existingProductId);
+        if (existingProduct) {
+          productData.price = Number.isFinite(item.price) ? item.price : existingProduct.price;
+        } else {
+          productData.price = Number.isFinite(item.price) ? item.price : 0;
+        }
         await Product.findByIdAndUpdate(item.existingProductId, productData, { runValidators: true });
         updated += 1;
       } else {
+        productData.price = Number.isFinite(item.price) ? item.price : 0;
         await Product.create(productData);
         created += 1;
       }
