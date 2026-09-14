@@ -213,17 +213,13 @@ function AdminPanel() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-                <input
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  defaultValue={editingProduct?.price}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
-              </div>
+              <input
+                name="price"
+                type="hidden"
+                step="0.01"
+                defaultValue={editingProduct?.price || 0}
+              />
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
                 <input
@@ -296,7 +292,6 @@ function AdminPanel() {
               <div>
                 <p className="font-medium text-gray-800">{product.nameTamil}</p>
                 <p className="text-sm text-gray-600">{product.nameEnglish}</p>
-                <p className="text-sm text-orange-600">₹{product.price.toFixed(2)}/{product.unit}</p>
               </div>
               <div className="flex space-x-2">
                 <button

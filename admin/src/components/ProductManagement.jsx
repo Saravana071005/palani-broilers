@@ -49,8 +49,6 @@ function ProductManagement() {
     return (!query || product.nameTamil.toLowerCase().includes(query) || product.nameEnglish.toLowerCase().includes(query) || product.category?.toLowerCase().includes(query)) && (category === 'all' || product.category === category) && (!lowStockOnly || stockStatusFor(product) === 'low-stock')
   }).sort((a, b) => {
     if (sort === 'oldest') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
-    if (sort === 'price-low') return a.price - b.price
-    if (sort === 'price-high') return b.price - a.price
     if (sort === 'name') return a.nameEnglish.localeCompare(b.nameEnglish)
     return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
   }), [products, search, category, lowStockOnly, sort])
@@ -87,11 +85,11 @@ function ProductManagement() {
     try {
       const formData = new FormData()
       formData.append('productIndex', form.productIndex.value)
-      formData.append('nameTamil', product.nameTamil)
-      formData.append('nameEnglish', product.nameEnglish)
-      formData.append('category', product.category || 'all')
-      formData.append('unit', product.unit || 'kg')
-      formData.append('price', form.price.value)
+      formData.append('nameTamil', form.nameTamil?.value ?? product.nameTamil)
+      formData.append('nameEnglish', form.nameEnglish?.value ?? product.nameEnglish)
+      formData.append('category', (form.category?.value ?? product.category) || 'all')
+      formData.append('unit', (form.unit?.value ?? product.unit) || 'kg')
+      formData.append('price', form.price?.value ?? product.price ?? 0)
       formData.append('stockStatus', form.stockStatus.value)
       await axios.put(`${API_URL}/api/products/${product._id}`, formData)
       await fetchData()
@@ -114,7 +112,7 @@ function ProductManagement() {
       formData.append('nameEnglish', product.nameEnglish)
       formData.append('category', product.category || 'all')
       formData.append('unit', product.unit || 'kg')
-      formData.append('price', product.price)
+      formData.append('price', product.price || 0)
       formData.append('stockStatus', stockStatusFor(product))
       if (remove) formData.append('removeImage', 'true')
       else formData.append('image', file)
@@ -194,7 +192,7 @@ function ProductManagement() {
       <div>
         <span>Catalog control</span>
         <h2>Product Management</h2>
-        <p>Change price, low stock, or out-of-stock status directly from each product.</p>
+        <p>Change low stock or out-of-stock status directly from each product.</p>
       </div>
       <div className="product-title-actions">
         <button type="button" className="secondary-action" onClick={handleDownloadProducts} disabled={loading || !products.length}><Download size={18} />Download Products TXT</button>
@@ -219,9 +217,9 @@ function ProductManagement() {
         <p className="form-help">Need a new option? Add it from the Categories section, then return here to select it.</p>
       </div>
       <div className="form-section">
-        <h4>Pricing & availability</h4>
+        <h4>Availability</h4>
         <div className="form-grid">
-          <label>Price (₹)<input name="price" type="number" step="0.01" defaultValue={editingProduct?.price} required /></label>
+          <input name="price" type="hidden" step="0.01" defaultValue={editingProduct?.price || 0} />
           <label>Unit<input name="unit" defaultValue={editingProduct?.unit || 'kg'} /></label>
           <label>Stock Status<select name="stockStatus" defaultValue={editingProduct ? stockStatusFor(editingProduct) : 'in-stock'}><option value="in-stock">In Stock</option><option value="low-stock">Low Stock</option><option value="out-of-stock">No Stock</option></select></label>
         </div>
@@ -239,7 +237,7 @@ function ProductManagement() {
       <div className="catalog-toolbar">
         <label className="search-field"><Search size={18} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search Tamil, English, or category" /></label>
         <select value={category} onChange={(event) => setCategory(event.target.value)}><option value="all">All categories</option>{categories.map((item) => <option key={item._id} value={item.slug}>{item.name}</option>)}</select>
-        <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option><option value="name">Name A to Z</option></select>
+        <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="name">Name A to Z</option></select>
         <label className="stock-filter"><input type="checkbox" checked={lowStockOnly} onChange={(event) => setLowStockOnly(event.target.checked)} />Low Stock</label>
       </div>
       {loading ? <div className="loading-grid">{Array.from({ length: 5 }).map((_, index) => <div className="skeleton" key={index} />)}</div> : visibleProducts.length ? <div className="product-list">
@@ -256,8 +254,12 @@ function ProductManagement() {
             <strong>{product.nameTamil}</strong><span>{product.nameEnglish}</span><small>{categoryName(product.category)} · {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : 'Date unavailable'}</small>
           </div>
           <form className="quick-product-edit" onSubmit={(event) => { event.preventDefault(); saveQuickEdit(product, event.currentTarget) }}>
+            <input name="price" type="hidden" min="0" step="0.01" defaultValue={product.price} />
             <label>Product Index<input name="productIndex" pattern="PB-\d{3,}" title="Use the format PB-001" defaultValue={product.productIndex} required /></label>
-            <label>Price (₹)<input name="price" type="number" min="0" step="0.01" defaultValue={product.price} required /></label>
+            <label className="quick-extra-field">Tamil Name<input name="nameTamil" defaultValue={product.nameTamil} required /></label>
+            <label className="quick-extra-field">English Name<input name="nameEnglish" defaultValue={product.nameEnglish} required /></label>
+            <label className="quick-extra-field">Unit<input name="unit" defaultValue={product.unit || 'kg'} /></label>
+            <label className="quick-extra-field">Category<select name="category" defaultValue={product.category || 'all'}><option value="all">All products</option>{categories.map((item) => <option value={item.slug} key={item._id}>{item.name}</option>)}</select></label>
             <label>Status<select name="stockStatus" defaultValue={stockStatusFor(product)}><option value="in-stock">In Stock</option><option value="low-stock">Low Stock</option><option value="out-of-stock">No Stock</option></select></label>
             <button type="submit" className="quick-save" disabled={quickSaving === product._id}>{quickSaving === product._id ? 'Saving…' : 'Update'}</button>
           </form>

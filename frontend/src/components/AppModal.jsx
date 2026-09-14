@@ -30,9 +30,6 @@ function AppModal({ product, onOpenApp, onDownloadApp, onClose, appOpenStatus, a
             {product.nameTamil}
           </h3>
           <p className="text-gray-600">{product.nameEnglish}</p>
-          <p className="text-2xl font-bold text-orange-600 mt-2">
-            ₹{product.price.toFixed(2)}/{product.unit}
-          </p>
         </div>
 
         <p className="text-gray-600 text-center mb-5">உங்களுக்கு வசதியான முறையில் ஆர்டர் செய்யுங்கள்</p>
