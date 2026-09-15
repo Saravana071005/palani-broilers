@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Download, Edit, ImagePlus, Plus, Save, Search, Trash2, X } from 'lucide-react'
 import axios from 'axios'
 
-const API_URL = 'https://palani-broilers-api.vercel.app'
+const API_URL = import.meta.env.VITE_API_URL || ''
 const requestErrorMessage = (error, fallback) => error.response?.data?.message || (error.request ? 'The API did not respond. Check the deployed backend CORS configuration.' : error.message || fallback)
 const stockStatusFor = (product) => product.stockStatus || (product.lowStock ? 'low-stock' : 'in-stock')
 

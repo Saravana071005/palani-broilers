@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react'
 import { Edit, Save, X, Phone, MapPin, Plus, Trash2 } from 'lucide-react'
 import axios from 'axios'
 
-const API_URL = 'https://palani-broilers-api.vercel.app'
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 function ContactManagement() {
   const [contact, setContact] = useState(null)
   const [editingMain, setEditingMain] = useState(false)
   const [editingBranch, setEditingBranch] = useState(null)
   const [showBranchForm, setShowBranchForm] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetchContact()
@@ -18,8 +20,9 @@ function ContactManagement() {
     try {
       const response = await axios.get(`${API_URL}/api/contact`)
       setContact(response.data)
-    } catch (error) {
-      console.error('Error fetching contact:', error)
+    } catch (err) {
+      console.error('Error fetching contact:', err)
+      setError('Unable to load contact information.')
     }
   }
 
@@ -29,11 +32,14 @@ function ContactManagement() {
       await axios.put(`${API_URL}/api/contact`, {
         mainPhone: e.target.mainPhone.value
       })
-      fetchContact()
+      await fetchContact()
       setEditingMain(false)
-    } catch (error) {
-      console.error('Error saving contact:', error)
-      alert('Error saving contact details')
+      setMessage('Main contact phone number updated successfully.')
+      setError('')
+    } catch (err) {
+      console.error('Error saving contact:', err)
+      setError(err.response?.data?.message || 'Error saving contact details')
+      setMessage('')
     }
   }
 
@@ -49,11 +55,14 @@ function ContactManagement() {
         pincode: e.target.pincode.value,
         googleMapUrl: e.target.googleMapUrl.value
       })
-      fetchContact()
+      await fetchContact()
       setShowBranchForm(false)
-    } catch (error) {
-      console.error('Error adding branch:', error)
-      alert('Error adding branch')
+      setMessage('New branch added successfully.')
+      setError('')
+    } catch (err) {
+      console.error('Error adding branch:', err)
+      setError(err.response?.data?.message || 'Error adding branch')
+      setMessage('')
     }
   }
 
@@ -69,11 +78,14 @@ function ContactManagement() {
         pincode: e.target.pincode.value,
         googleMapUrl: e.target.googleMapUrl.value
       })
-      fetchContact()
+      await fetchContact()
       setEditingBranch(null)
-    } catch (error) {
-      console.error('Error updating branch:', error)
-      alert('Error updating branch')
+      setMessage('Branch details updated successfully.')
+      setError('')
+    } catch (err) {
+      console.error('Error updating branch:', err)
+      setError(err.response?.data?.message || 'Error updating branch')
+      setMessage('')
     }
   }
 
@@ -81,10 +93,13 @@ function ContactManagement() {
     if (window.confirm('Are you sure you want to delete this branch?')) {
       try {
         await axios.delete(`${API_URL}/api/contact/branches/${index}`)
-        fetchContact()
-      } catch (error) {
-        console.error('Error deleting branch:', error)
-        alert('Error deleting branch')
+        await fetchContact()
+        setMessage('Branch deleted successfully.')
+        setError('')
+      } catch (err) {
+        console.error('Error deleting branch:', err)
+        setError(err.response?.data?.message || 'Error deleting branch')
+        setMessage('')
       }
     }
   }
@@ -96,6 +111,9 @@ function ContactManagement() {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Contact Details Management</h2>
+
+      {message && <div className="admin-alert">{message}</div>}
+      {error && <div className="admin-alert admin-alert-error">{error}</div>}
 
       {/* Main Contact */}
       <div className="mb-8">

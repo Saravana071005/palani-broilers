@@ -1,7 +1,12 @@
-node_modules
+node_modules/
 .env
 .env.*
 !.env.example
-dist
-frontend/dist
-admin/dist
+.vercel/
+dist/
+frontend/dist/
+admin/dist/
+backend/uploads/*.apk
+backend/uploads/*.jpg
+backend/uploads/*.jpeg
+backend/uploads/*.png

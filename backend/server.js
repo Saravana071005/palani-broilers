@@ -5,6 +5,7 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const path = require('path');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config({
   path: path.join(__dirname, '.env')
 });
@@ -56,11 +57,28 @@ const allowedOrigins = new Set([
 ]);
 
 if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.add('http://localhost:3000');
   allowedOrigins.add('http://localhost:3001');
+  allowedOrigins.add('http://localhost:5173');
+  allowedOrigins.add('http://localhost:5174');
 }
 
 const ADMIN_COOKIE_NAME = 'palani_admin_session';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: 'Too many login attempts. Please try again later.'
+  },
+  handler: (req, res, next, options) => {
+    res.status(429).json(options.message);
+  }
+});
 
 function getCookie(req, name) {
   const cookies = req.headers.cookie || '';
@@ -107,10 +125,27 @@ function requireAdmin(req, res, next) {
 
 function requireAdminOrigin(req, res, next) {
   const origin = req.get('origin');
-  if (!origin || !allowedOrigins.has(origin)) {
-    return res.status(403).json({ message: 'Admin request origin is not allowed' });
+  if (origin) {
+    if (allowedOrigins.has(origin)) return next();
+    return res.status(403).json({ error: 'Admin request origin is not allowed' });
   }
-  next();
+
+  const referer = req.get('referer');
+  if (referer) {
+    try {
+      const refererOrigin = new URL(referer).origin;
+      if (allowedOrigins.has(refererOrigin)) return next();
+    } catch {
+      // Invalid referer URL
+    }
+    return res.status(403).json({ error: 'Admin request origin is not allowed' });
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return next();
+  }
+
+  return res.status(403).json({ error: 'Admin request origin is not allowed' });
 }
 
 const corsOptions = {
@@ -120,7 +155,9 @@ const corsOptions = {
       return;
     }
 
-    callback(new Error('Origin is not allowed by CORS'));
+    const error = new Error('CORS origin not allowed');
+    error.status = 403;
+    callback(error);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -134,12 +171,12 @@ app.use(express.json());
 
 // ==================== ADMIN AUTHENTICATION ====================
 
-app.post('/api/admin/login', requireAdminOrigin, (req, res) => {
+app.post('/api/admin/login', requireAdminOrigin, loginLimiter, (req, res) => {
   if (!process.env.ADMIN_SESSION_SECRET || !process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
     return res.status(503).json({ message: 'Admin authentication is not configured' });
   }
 
-  if (!credentialsMatch(req.body.email, req.body.password)) {
+  if (!req.body || !req.body.email || !req.body.password || !credentialsMatch(req.body.email, req.body.password)) {
     return res.status(401).json({ message: 'Invalid admin credentials' });
   }
 
@@ -147,7 +184,7 @@ app.post('/api/admin/login', requireAdminOrigin, (req, res) => {
   res.cookie(ADMIN_COOKIE_NAME, signSession({ sub: 'admin', exp: expiresAt }), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: 'lax',
     maxAge: SESSION_DURATION_MS,
     path: '/'
   });
@@ -162,7 +199,7 @@ app.post('/api/admin/logout', requireAdminOrigin, (req, res) => {
   res.clearCookie(ADMIN_COOKIE_NAME, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: 'lax',
     path: '/'
   });
   res.status(204).end();
@@ -450,7 +487,7 @@ app.get('/', (req, res) => {
 });
 
 
-// ==================== CLOUDINARY UPLOAD ====================
+// ==================== CLOUDINARY UPLOAD & CLEANUP ====================
 
 function uploadToCloudinary(file) {
   return new Promise((resolve, reject) => {
@@ -474,6 +511,39 @@ function uploadToCloudinary(file) {
 
     stream.end(file.buffer);
   });
+}
+
+function extractCloudinaryPublicId(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== 'string') return null;
+  if (!imageUrl.includes('res.cloudinary.com')) return null;
+
+  try {
+    const url = new URL(imageUrl);
+    const parts = url.pathname.split('/').filter(Boolean);
+    const uploadIndex = parts.indexOf('upload');
+    if (uploadIndex === -1) return null;
+
+    const afterUpload = parts.slice(uploadIndex + 1);
+    if (afterUpload[0] && /^v\d+$/.test(afterUpload[0])) {
+      afterUpload.shift();
+    }
+    const fullPathWithExt = afterUpload.join('/');
+    const dotIndex = fullPathWithExt.lastIndexOf('.');
+    return dotIndex !== -1 ? fullPathWithExt.slice(0, dotIndex) : fullPathWithExt;
+  } catch {
+    return null;
+  }
+}
+
+async function deleteCloudinaryAsset(imageUrl) {
+  const publicId = extractCloudinaryPublicId(imageUrl);
+  if (!publicId) return;
+
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (err) {
+    console.error('Failed to clean up Cloudinary asset:', publicId, err.message);
+  }
 }
 
 
@@ -713,6 +783,13 @@ app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, u
 
   try {
 
+    const existingProduct = await Product.findById(req.params.id);
+    if (!existingProduct) {
+      return res.status(404).json({
+        message: 'Product not found'
+      });
+    }
+
     const stockStatus = ['low-stock', 'out-of-stock'].includes(req.body.stockStatus)
       ? req.body.stockStatus
       : req.body.lowStock === 'true' ? 'low-stock' : 'in-stock';
@@ -737,15 +814,24 @@ app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, u
 
     };
 
+    let oldImageToDelete = null;
 
     if (req.file) {
 
       updateData.imageUrl =
         await uploadToCloudinary(req.file);
 
+      if (existingProduct.imageUrl && existingProduct.imageUrl !== updateData.imageUrl) {
+        oldImageToDelete = existingProduct.imageUrl;
+      }
+
     } else if (req.body.removeImage === 'true') {
 
       updateData.imageUrl = '';
+
+      if (existingProduct.imageUrl) {
+        oldImageToDelete = existingProduct.imageUrl;
+      }
 
     }
 
@@ -760,24 +846,18 @@ app.put('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase, u
         }
       );
 
-
-    if (!updatedProduct) {
-
-      return res.status(404).json({
-        message: 'Product not found'
-      });
-
+    if (oldImageToDelete) {
+      await deleteCloudinaryAsset(oldImageToDelete);
     }
-
 
     res.json(updatedProduct);
 
   } catch (error) {
 
-    console.error('Error updating product:', error);
+    console.error('Error updating product:', error.message);
 
     res.status(500).json({
-      message: error.message
+      message: 'Unable to update product'
     });
 
   }
@@ -791,9 +871,7 @@ app.delete('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase
 
   try {
 
-    const product =
-      await Product.findByIdAndDelete(req.params.id);
-
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
 
@@ -803,6 +881,11 @@ app.delete('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase
 
     }
 
+    if (product.imageUrl) {
+      await deleteCloudinaryAsset(product.imageUrl);
+    }
+
+    await product.deleteOne();
 
     res.json({
       message: 'Product deleted successfully'
@@ -810,10 +893,10 @@ app.delete('/api/products/:id', requireAdminOrigin, requireAdmin, ensureDatabase
 
   } catch (error) {
 
-    console.error('Error deleting product:', error);
+    console.error('Error deleting product:', error.message);
 
     res.status(500).json({
-      message: error.message
+      message: 'Unable to delete product'
     });
 
   }
@@ -1103,11 +1186,25 @@ app.delete('/api/contact/branches/:index', requireAdminOrigin, requireAdmin, ens
 // ============================================================
 
 app.get('/api/download-apk', (req, res) => {
+  const canonicalUrl = process.env.CANONICAL_APK_URL || 'https://palanibroilers.store/palani-broilers.apk';
+  res.redirect(302, canonicalUrl);
+});
 
-  res.status(404).json({
-    message: 'APK file is not available on Vercel'
+// ============================================================
+//                 GLOBAL ERROR HANDLER (CORS & 500)
+// ============================================================
+
+app.use((err, req, res, next) => {
+  if (err && (err.message === 'CORS origin not allowed' || err.status === 403)) {
+    return res.status(403).json({
+      error: 'CORS origin not allowed'
+    });
+  }
+
+  console.error('Unhandled server error:', err ? err.message : 'Unknown error');
+  res.status(err && err.status ? err.status : 500).json({
+    error: 'Internal server error'
   });
-
 });
 
 module.exports = app;

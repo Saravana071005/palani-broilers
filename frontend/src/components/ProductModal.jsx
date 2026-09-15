@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { PhoneCall, Smartphone, Download, HelpCircle, X } from 'lucide-react'
 
 function ProductModal({
@@ -10,6 +10,7 @@ function ProductModal({
   appUnavailable,
   onNeedHelp,
   contact,
+  categories,
 }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -20,6 +21,25 @@ function ProductModal({
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
+
+  const categoryName = useMemo(() => {
+    if (!product?.category) return ''
+    if (Array.isArray(categories)) {
+      const match = categories.find((c) =>
+        c && (
+          String(c.slug).toLowerCase() === String(product.category).toLowerCase() ||
+          String(c._id).toLowerCase() === String(product.category).toLowerCase() ||
+          String(c.name).toLowerCase() === String(product.category).toLowerCase()
+        )
+      )
+      if (match && match.name) return match.name
+    }
+    // If it is an internal auto-generated slug (e.g. category-7b1c4ec039fc), do not expose it
+    if (/^category-[a-f0-9]+$/i.test(product.category)) {
+      return ''
+    }
+    return product.category
+  }, [product?.category, categories])
 
   if (!product) return null
 
@@ -67,8 +87,8 @@ function ProductModal({
         <div className="modal-content-col">
           <div className="modal-meta-row">
             <span className="modal-index-pill">{displayIndex}</span>
-            {product.category && (
-              <span className="modal-cat-pill">{product.category}</span>
+            {categoryName && (
+              <span className="modal-cat-pill">{categoryName}</span>
             )}
           </div>
 

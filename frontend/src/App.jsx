@@ -209,6 +209,7 @@ function App() {
           appUnavailable={appUnavailable}
           contact={contact}
           onNeedHelp={handleOpenHelp}
+          categories={categories}
         />
       )}
     </div>

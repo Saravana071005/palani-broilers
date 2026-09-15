@@ -8,7 +8,7 @@ import ContactManagement from './components/ContactManagement'
 import Login from './components/Login'
 import axios from 'axios'
 
-const API_URL = 'https://palani-broilers-api.vercel.app'
+const API_URL = import.meta.env.VITE_API_URL || ''
 axios.defaults.withCredentials = true
 
 function Dashboard() {

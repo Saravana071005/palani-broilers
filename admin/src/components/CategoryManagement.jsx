@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Edit, Plus, Save, Search, Trash2, X } from 'lucide-react'
 import axios from 'axios'
 
-const API_URL = 'https://palani-broilers-api.vercel.app'
+const API_URL = import.meta.env.VITE_API_URL || ''
 const errorMessage = (error, fallback) => error.response?.data?.message || fallback
 
 function CategoryManagement() {
