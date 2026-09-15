@@ -128,9 +128,9 @@ const handleDownloadApp = () => {
 
   return (
     <div className="app-shell">
-      <Header />
+      <Header contact={contact} />
       <main>
-        <Hero />
+        <Hero contact={contact} />
         <div className="site-content">
         <ProductList
           products={filteredProducts}
@@ -144,8 +144,11 @@ const handleDownloadApp = () => {
         
           {contact && <ContactSection contact={contact} />}
           <HelpSection onDownloadApp={handleDownloadApp} />
+          <footer className="site-footer"><img src="/logo.png" alt="" /><div><strong>பழனி பிராய்லர்ஸ்</strong><span>PALANI BROILERS · THANJAVUR</span></div><a href="#products">Products</a><a href="#contact">Contact</a><button type="button" onClick={() => openHelp('help')}>Help</button></footer>
         </div>
       </main>
+
+      {contact?.mainPhone && <nav className="mobile-bottom-nav" aria-label="Quick actions"><a href="#products">Products</a><button type="button" onClick={() => openHelp('help')}>Help</button><a href={`tel:${String(contact.mainPhone).replace(/[^\d+]/g, '')}`}>☎ Call Now</a></nav>}
 
       {showModal && (
         <AppModal

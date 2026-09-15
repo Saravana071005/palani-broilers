@@ -1,36 +1,22 @@
-import { HelpCircle, Menu, X } from 'lucide-react'
+import { HelpCircle, Menu, PhoneCall, X } from 'lucide-react'
 import { useState } from 'react'
-function Header() {
+
+function Header({ contact }) {
   const [open, setOpen] = useState(false)
+  const phone = String(contact?.mainPhone || '').replace(/[^\d+]/g, '')
   const close = () => setOpen(false)
   const showHelp = () => {
     close()
     window.dispatchEvent(new Event('palani-open-help'))
+    requestAnimationFrame(() => document.getElementById('help')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
-  return (
-    <header className="bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <img 
-              src="/logo.png" 
-              alt="Palani Broilers Logo" 
-              className="w-16 h-16 rounded-full shadow-md object-cover"
-            />
-            <div>
-              <h1 className="text-2xl font-bold text-white">பழனி பிராய்லர்ஸ்</h1>
-              <p className="text-orange-100 text-sm">Palani Broilers - Thanjavur</p>
-            </div>
-          </div>
-          
-          <button className="mobile-menu" onClick={() => setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open ? <X /> : <Menu />}</button>
-          <nav className={open ? 'site-nav site-nav-open' : 'site-nav'}>
-            <a onClick={close} href="#products">பொருட்கள்</a><a onClick={close} href="#contact">தொடர்பு</a><a onClick={showHelp} href="#help"><HelpCircle size={17} /> உதவி ›</a>
-          </nav>
-        </div>
-      </div>
-    </header>
-  )
+
+  return <header className="site-header"><div className="site-header-inner">
+    <a className="brand-lockup" href="#top" aria-label="Palani Broilers முகப்பு"><img src="/logo.png" alt="Palani Broilers logo" /><span><b>பழனி பிராய்லர்ஸ்</b><small>PALANI BROILERS · THANJAVUR</small></span></a>
+    <nav className="desktop-nav" aria-label="Main navigation"><a href="#products">Products</a><a href="#contact">Contact</a><button type="button" onClick={showHelp}><HelpCircle size={16} /> Help</button>{phone && <a className="header-call" href={`tel:${phone}`}><PhoneCall size={16} /> Order / Call</a>}</nav>
+    <button className="mobile-menu" type="button" onClick={() => setOpen(true)} aria-label="Open menu"><Menu /></button>
+    {open && <div className="mobile-nav-overlay" role="dialog" aria-modal="true" aria-label="Navigation menu"><button className="mobile-nav-close" type="button" onClick={close} aria-label="Close menu"><X /></button><a onClick={close} href="#products">Products <span>01</span></a><a onClick={close} href="#categories">Categories <span>02</span></a><a onClick={close} href="#contact">Contact <span>03</span></a><a onClick={showHelp} href="#how-to-order">How to Order <span>04</span></a><button type="button" onClick={showHelp}>Help <span>05</span></button>{phone && <a className="mobile-nav-call" href={`tel:${phone}`}><PhoneCall /> இப்போது அழைக்கவும்</a>}</div>}
+  </div></header>
 }
 
 export default Header

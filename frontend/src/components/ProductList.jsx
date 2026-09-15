@@ -1,92 +1,13 @@
-import { Search } from 'lucide-react'
+import { Search, SlidersHorizontal } from 'lucide-react'
 
 function ProductList({ products, categories, onProductClick, selectedCategory, onCategoryChange, searchQuery, onSearchChange }) {
-  const categoryOptions = [
-    { id: 'all', name: 'All' },
-    ...categories.map((category) => ({ id: category.slug, name: category.name }))
-  ]
-
-  return (
-    <section id="products" className="mb-12">
-      <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">எங்கள் பொருட்கள்</h2>
-        
-        {/* Search Bar */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="பொருட்களைத் தேடவும்..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* Category Filters */}
-        <div className="flex flex-wrap gap-2">
-          {categoryOptions.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => onCategoryChange(category.id)}
-              className={`px-4 py-2 rounded-full font-medium transition ${
-                selectedCategory === category.id
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <div
-            key={product._id}
-            onClick={() => onProductClick(product)}
-            className={`bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition transform hover:-translate-y-1 ${product.stockStatus === 'out-of-stock' || product.lowStock ? 'product-unavailable' : ''}`}
-          >
-            <div className="relative h-48 bg-gray-100">
-              {product.imageUrl ? (
-                <img
-                  src={product.imageUrl}
-                  alt={product.nameEnglish}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-orange-200">
-                  <span className="text-4xl">🥩</span>
-                </div>
-              )}
-              {product.stockStatus === 'out-of-stock' || product.lowStock ? (
-                <div className="absolute top-3 right-3 bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  OUT OF STOCK
-                </div>
-              ) : null}
-            </div>
-            
-            <div className="p-4">
-              <h3 className="font-bold text-gray-800 text-lg mb-1">
-                {product.nameTamil}
-              </h3>
-              <p className="text-gray-600 text-sm mb-2">
-                {product.nameEnglish}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {products.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">பொருட்கள் கிடைக்கவில்லை</p>
-        </div>
-      )}
-    </section>
-  )
+  const categoryOptions = [{ id: 'all', name: 'All' }, ...categories.map((category) => ({ id: category.slug, name: category.name }))]
+  const unavailable = (product) => product.stockStatus === 'out-of-stock' || product.lowStock
+  return <section id="products" className="catalogue-section" aria-labelledby="products-title">
+    <div className="catalogue-intro"><p className="eyebrow">THE DAILY SELECTION</p><h2 id="products-title">எங்கள் <em>பொருட்கள்</em></h2><p>உங்கள் விருப்பமான புதிய பொருட்களைத் தேர்வு செய்யுங்கள்.</p></div>
+    <div className="catalogue-tools"><label className="editorial-search"><Search size={18} /><input type="search" placeholder="Tamil, English அல்லது category தேடவும்" value={searchQuery} onChange={(event) => onSearchChange(event.target.value)} /></label><div id="categories" className="category-rail" aria-label="Product categories"><SlidersHorizontal size={16} />{categoryOptions.map((category) => <button key={category.id} type="button" onClick={() => onCategoryChange(category.id)} className={selectedCategory === category.id ? 'is-active' : ''}>{category.name}</button>)}</div></div>
+    <div className="editorial-product-grid">{products.map((product, index) => <button type="button" className={`editorial-product ${index % 7 === 0 ? 'product-feature' : ''} ${unavailable(product) ? 'product-unavailable' : ''}`} key={product._id} onClick={() => onProductClick(product)} aria-label={`${product.nameEnglish} details`}><span className="product-image-frame">{product.imageUrl ? <img src={product.imageUrl} alt={product.nameEnglish} loading="lazy" /> : <span className="image-placeholder">PB</span>}{unavailable(product) && <span className="availability-tag">OUT OF STOCK</span>}</span><span className="product-copy"><span className="product-category">{categories.find((category) => category.slug === product.category)?.name || product.category || 'Palani Broilers'}</span><strong>{product.nameTamil}</strong><small>{product.nameEnglish}</small><span className="product-open">View product <i>↗</i></span></span></button>)}</div>
+    {!products.length && <div className="catalogue-empty">பொருட்கள் கிடைக்கவில்லை. வேறு தேடல் அல்லது வகையை முயற்சிக்கவும்.</div>}
+  </section>
 }
-
 export default ProductList

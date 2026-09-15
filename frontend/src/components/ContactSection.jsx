@@ -14,7 +14,7 @@ function ContactSection({ contact }) {
         <div className="space-y-3">
           <div className="flex items-center space-x-3">
             <Phone size={20} className="text-orange-600" />
-            {contact.mainPhone ? <a className="text-gray-700" href={phoneLink(contact.mainPhone)}>{contact.mainPhone}</a> : <span className="text-gray-700">தகவல் இல்லை</span>}
+            {contact.mainPhone ? <a className="contact-call text-gray-700" href={phoneLink(contact.mainPhone)}><Phone size={17} /> இப்போது அழைக்கவும் <span>{contact.mainPhone}</span></a> : <span className="text-gray-700">தகவல் இல்லை</span>}
           </div>
         </div>
       </div>
