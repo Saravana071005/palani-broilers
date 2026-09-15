@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import axios from 'axios'
 import Header from './components/Header'
 import Hero from './components/Hero'
-import ProductList from './components/ProductList'
+import ProductShowcase from './components/ProductShowcase'
 import ContactSection from './components/ContactSection'
-import AppModal from './components/AppModal'
-import HelpSection from './components/HelpSection'
-import axios from 'axios'
+import HelpGuide from './components/HelpGuide'
+import Footer from './components/Footer'
+import MobileNav from './components/MobileNav'
+import ProductModal from './components/ProductModal'
+
 const API_URL = 'https://palani-broilers-api.vercel.app'
 const ANDROID_APP_INTENT = 'intent://open/#Intent;package=com.example.palaniposapp;component=com.example.palaniposapp/.MainActivity;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end'
 
@@ -34,7 +37,7 @@ function App() {
       const response = await axios.get(`${API_URL}/api/products`, {
         params: { category: selectedCategory }
       })
-      setProducts(response.data)
+      setProducts(response.data || [])
     } catch (error) {
       console.error('Error fetching products:', error)
     }
@@ -52,7 +55,7 @@ function App() {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/categories`)
-      setCategories(response.data)
+      setCategories(response.data || [])
     } catch (error) {
       console.error('Error fetching categories:', error)
     }
@@ -66,17 +69,27 @@ function App() {
   }
 
   const handleOpenApp = () => {
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      setAppOpenStatus('This application is currently available for Android.')
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+    const isAndroid = /Android/i.test(navigator.userAgent)
+
+    if (isIOS) {
+      // iOS custom scheme
+      const productId = selectedProduct?._id || selectedProduct?.productIndex || ''
+      window.location.href = `palanibroilers://product/${productId}`
+      setTimeout(() => {
+        setAppOpenStatus('Palani Broilers செயலி நிறுவப்படவில்லை.')
+        setAppUnavailable(true)
+      }, 1500)
       return
     }
 
-    if (!/Android/i.test(navigator.userAgent)) {
-      setAppOpenStatus('Palani Broilers APK is for Android devices. Open this page on Android to install the app.')
+    if (!isAndroid) {
+      setAppOpenStatus('Palani Broilers APK ஆண்ட்ராய்டு போன்களுக்கானது. மொபைலில் திறந்து நிறுவவும்.')
+      setAppUnavailable(true)
       return
     }
 
-    setAppOpenStatus('Opening the Palani Broilers app…')
+    setAppOpenStatus('செயலியைத் திறக்கிறது…')
     let appOpened = false
 
     const handleVisibilityChange = () => {
@@ -90,68 +103,97 @@ function App() {
 
     window.setTimeout(() => {
       if (!appOpened) {
-        setAppOpenStatus('Palani Broilers app is not installed.')
+        setAppOpenStatus('Palani Broilers செயலி இன்னும் நிறுவப்படவில்லை.')
         setAppUnavailable(true)
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }, 1200)
+    }, 1300)
   }
 
-const handleDownloadApp = () => {
-  const link = document.createElement('a')
-  link.href = '/palani-broilers.apk'
-  link.download = 'palani-broilers.apk'
-  document.body.appendChild(link)
-  link.click()
+  const handleDownloadApp = () => {
+    const link = document.createElement('a')
+    link.href = '/palani-broilers.apk'
+    link.download = 'palani-broilers.apk'
+    document.body.appendChild(link)
+    link.click()
     link.remove()
-    setAppOpenStatus('')
-    setShowModal(false)
-}
-
-  const filteredProducts = products.filter(product => {
-    const searchLower = searchQuery.toLowerCase()
-    return (
-      product.nameTamil.toLowerCase().includes(searchLower) ||
-      product.nameEnglish.toLowerCase().includes(searchLower)
-    )
-  }).sort((first, second) => {
-    const stockRank = (product) => product.stockStatus === 'out-of-stock' || product.lowStock ? 1 : 0
-    const indexNumber = (product) => Number(String(product.productIndex || '').match(/^PB-(\d+)$/i)?.[1] || Number.MAX_SAFE_INTEGER)
-    return stockRank(first) - stockRank(second) || indexNumber(first) - indexNumber(second)
-  })
-
-  const openHelp = (target = 'help') => {
-    setShowModal(false)
-    window.dispatchEvent(new Event('palani-open-help'))
-    requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    setAppOpenStatus('APK பதிவிறக்கம் தொடங்கப்பட்டது...')
   }
+
+  const handleOpenHelp = () => {
+    if (showModal) {
+      setShowModal(false)
+    }
+    window.dispatchEvent(new Event('palani-open-help'))
+    requestAnimationFrame(() => {
+      const el = document.getElementById('help')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    })
+  }
+
+  // Derive featured hero product: first in-stock product with an image
+  const featuredHeroProduct = useMemo(() => {
+    if (!products || products.length === 0) return null
+    const inStock = products.find(
+      (p) => (p.stockStatus !== 'out-of-stock' && !p.lowStock) && p.imageUrl
+    )
+    return inStock || products[0] || null
+  }, [products])
+
+  // Category name lookup for hero
+  const featuredCategoryName = useMemo(() => {
+    if (!featuredHeroProduct) return ''
+    const match = categories.find(
+      (c) => c.slug === featuredHeroProduct.category || c._id === featuredHeroProduct.category
+    )
+    return match?.name || featuredHeroProduct.category || ''
+  }, [featuredHeroProduct, categories])
 
   return (
     <div className="app-shell">
-      <Header contact={contact} />
+      {/* Minimal Sticky Header */}
+      <Header contact={contact} onOpenHelp={handleOpenHelp} />
+
       <main>
-        <Hero contact={contact} />
-        <div className="site-content">
-        <ProductList
-          products={filteredProducts}
-          categories={categories}
+        {/* Compact Editorial Hero */}
+        <Hero
+          contact={contact}
+          featuredProduct={featuredHeroProduct}
           onProductClick={handleProductClick}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          categoryName={featuredCategoryName}
         />
-        
+
+        {/* Product Showcase Section */}
+        <div className="site-content">
+          <ProductShowcase
+            products={products}
+            categories={categories}
+            onProductClick={handleProductClick}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
+
+          {/* Contact Section */}
           {contact && <ContactSection contact={contact} />}
-          <HelpSection onDownloadApp={handleDownloadApp} />
-          <footer className="site-footer"><img src="/logo.png" alt="" /><div><strong>பழனி பிராய்லர்ஸ்</strong><span>PALANI BROILERS · THANJAVUR</span></div><a href="#products">Products</a><a href="#contact">Contact</a><button type="button" onClick={() => openHelp('help')}>Help</button></footer>
+
+          {/* Compact Tamil Help Guide */}
+          <HelpGuide onDownloadApp={handleDownloadApp} contact={contact} />
+
+          {/* Minimal Footer */}
+          <Footer contact={contact} onOpenHelp={handleOpenHelp} />
         </div>
       </main>
 
-      {contact?.mainPhone && <nav className="mobile-bottom-nav" aria-label="Quick actions"><a href="#products">Products</a><button type="button" onClick={() => openHelp('help')}>Help</button><a href={`tel:${String(contact.mainPhone).replace(/[^\d+]/g, '')}`}>☎ Call Now</a></nav>}
+      {/* Sticky Bottom Mobile Bar */}
+      <MobileNav contact={contact} onOpenHelp={handleOpenHelp} />
 
+      {/* Premium Product Modal */}
       {showModal && (
-        <AppModal
+        <ProductModal
           product={selectedProduct}
           onOpenApp={handleOpenApp}
           onDownloadApp={handleDownloadApp}
@@ -159,7 +201,7 @@ const handleDownloadApp = () => {
           appOpenStatus={appOpenStatus}
           appUnavailable={appUnavailable}
           contact={contact}
-          onNeedHelp={() => openHelp('app-help')}
+          onNeedHelp={handleOpenHelp}
         />
       )}
     </div>

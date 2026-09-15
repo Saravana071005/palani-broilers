@@ -2,56 +2,89 @@ import { Phone, MapPin, Navigation } from 'lucide-react'
 
 function ContactSection({ contact }) {
   if (!contact) return null
+
   const phoneLink = (phone) => `tel:${String(phone || '').replace(/[^\d+]/g, '')}`
+  const mainPhoneRaw = phoneLink(contact.mainPhone)
 
   return (
-    <section id="contact" className="bg-white rounded-2xl shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">தொடர்பு கொள்ளுங்கள்</h2>
-      
-      {/* Main Contact */}
-      <div className="mb-8 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">முதன்மை அலுவலகம்</h3>
-        <div className="space-y-3">
-          <div className="flex items-center space-x-3">
-            <Phone size={20} className="text-orange-600" />
-            {contact.mainPhone ? <a className="contact-call text-gray-700" href={phoneLink(contact.mainPhone)}><Phone size={17} /> இப்போது அழைக்கவும் <span>{contact.mainPhone}</span></a> : <span className="text-gray-700">தகவல் இல்லை</span>}
-          </div>
-        </div>
+    <section id="contact" className="editorial-contact-section" aria-labelledby="contact-heading">
+      <div className="contact-headline-group">
+        <div className="contact-section-tag">Palani Broilers · Thanjavur</div>
+        <h2 id="contact-heading" className="contact-tamil-heading">
+          தொடர்பு கொள்ளவும்
+        </h2>
+        <p className="contact-subheading">
+          புதிய இறைச்சி மற்றும் கடல் உணவுகளுக்கான நேரடி தொலைபேசி ஆர்டர் & கிளைகள்.
+        </p>
       </div>
 
-      {/* Branches */}
+      {/* Main Office / Hotline */}
+      <div className="contact-main-hero-card">
+        <div>
+          <span className="text-xs uppercase tracking-widest text-sage font-bold block mb-1">
+            முதன்மை தொடர்பு / Main Hotline
+          </span>
+          <div className="text-2xl sm:text-3xl font-black text-white tracking-wide">
+            {contact.mainPhone || 'தகவல் இல்லை'}
+          </div>
+        </div>
+
+        {contact.mainPhone && (
+          <a
+            className="contact-main-phone-btn"
+            href={mainPhoneRaw}
+          >
+            <Phone size={20} />
+            <span>இப்போது அழைக்கவும் (CALL NOW)</span>
+          </a>
+        )}
+      </div>
+
+      {/* Branches Showcase */}
       {contact.branches && contact.branches.length > 0 && (
         <div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">எங்கள் கிளைகள் ({contact.branches.length})</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="flex items-center gap-2 mb-4">
+            <MapPin size={18} className="text-coral" />
+            <h3 className="text-lg font-bold text-white font-tamil m-0">
+              எங்கள் கிளைகள் ({contact.branches.length})
+            </h3>
+          </div>
+
+          <div className="branches-grid">
             {contact.branches.map((branch, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-5 hover:bg-gray-100 transition">
-                <h4 className="font-bold text-gray-800 text-lg mb-3">{branch.name}</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Phone size={16} className="text-orange-600" />
-                    <a className="text-gray-600" href={phoneLink(branch.phone)}>{branch.phone}</a>
-                  </div>
-                  <div className="flex items-start space-x-2">
-                    <MapPin size={16} className="text-orange-600 mt-1" />
-                    <span className="text-gray-600">
-                      {branch.address}<br />
-                      {branch.city}, {branch.state}
-                      {branch.pincode && <>, {branch.pincode}</>}
-                    </span>
-                  </div>
-                  {branch.googleMapUrl && (
+              <div key={branch._id || index} className="branch-editorial-card">
+                <div>
+                  <h4 className="branch-name">{branch.name}</h4>
+
+                  {branch.phone && (
                     <a
-                      href={branch.googleMapUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center space-x-2 text-orange-600 hover:text-orange-700 transition mt-2"
+                      className="branch-phone-link"
+                      href={phoneLink(branch.phone)}
                     >
-                      <Navigation size={16} />
-                      <span>வழிகாட்டி பெறவும்</span>
+                      <Phone size={15} />
+                      <span>{branch.phone}</span>
                     </a>
                   )}
+
+                  <div className="branch-address">
+                    {branch.address}
+                    <br />
+                    {branch.city}, {branch.state}
+                    {branch.pincode ? ` - ${branch.pincode}` : ''}
+                  </div>
                 </div>
+
+                {branch.googleMapUrl && (
+                  <a
+                    href={branch.googleMapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="branch-map-btn"
+                  >
+                    <Navigation size={14} />
+                    <span>வழிகாட்டி (Map)</span>
+                  </a>
+                )}
               </div>
             ))}
           </div>
