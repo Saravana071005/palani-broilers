@@ -1635,9 +1635,44 @@ a {
   padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 3.5vw, 2.5rem);
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-  gap: clamp(2rem, 5vw, 4rem);
+  grid-template-areas:
+    "badge   logo"
+    "title   logo"
+    "tagline logo"
+    "desc    logo"
+    "rating  logo";
+  column-gap: clamp(2rem, 5vw, 4rem);
+  row-gap: 0.75rem;
   align-items: center;
   position: relative;
+}
+
+.hero-section-badge {
+  grid-area: badge;
+}
+
+.hero-section-title {
+  grid-area: title;
+}
+
+.hero-section-tagline {
+  grid-area: tagline;
+}
+
+.hero-section-desc {
+  grid-area: desc;
+}
+
+.hero-section-rating {
+  grid-area: rating;
+}
+
+.hero-section-logo {
+  grid-area: logo;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
 }
 
 .hero-left-column {
@@ -1657,7 +1692,7 @@ a {
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
-  margin-bottom: 1rem;
+  margin-bottom: 0.35rem;
 }
 
 .hero-heading-group {
@@ -1688,7 +1723,7 @@ a {
   font-size: clamp(0.9rem, 1.4vw, 1.05rem);
   line-height: 1.65;
   color: var(--earth-muted);
-  margin: 0 0 1.75rem;
+  margin: 0.5rem 0 1.25rem;
 }
 
 .hero-actions-container {
@@ -1746,10 +1781,11 @@ a {
   position: relative;
 }
 
+.logo-3d-scene-container,
 .logo-3d-scene {
   position: relative;
   width: 100%;
-  max-width: 420px;
+  max-width: 380px;
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   display: flex;
@@ -1758,6 +1794,8 @@ a {
   perspective: 1200px;
   transform-style: preserve-3d;
   isolation: isolate;
+  overflow: hidden;
+  border-radius: 1.5rem;
 }
 
 /* Background Light Rings */
@@ -2055,35 +2093,43 @@ a {
   .editorial-hero-showcase {
     display: flex;
     flex-direction: column;
-    padding: 1rem 0.5rem 1rem;
+    padding: 1rem 0.75rem 1.25rem;
     margin-bottom: 0.75rem;
     text-align: center;
-    gap: 1.25rem;
+    gap: 0.75rem;
   }
 
-  .hero-mobile-rating-wrapper {
+  .hero-section-logo {
     order: 1;
     display: flex;
     justify-content: center;
     margin-bottom: 0.25rem;
   }
 
-  .hero-right-column {
+  .hero-section-rating {
     order: 2;
     display: flex;
     justify-content: center;
     margin-bottom: 0.25rem;
   }
 
-  .hero-left-column {
+  .hero-section-badge {
     order: 3;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
   }
 
-  .hero-desktop-rating-wrapper {
-    display: none !important;
+  .hero-section-title {
+    order: 4;
+  }
+
+  .hero-section-tagline {
+    order: 5;
+  }
+
+  .hero-section-desc {
+    order: 6;
   }
 
   .hero-desktop-call-row {
@@ -2093,7 +2139,7 @@ a {
   .hero-brand-badge {
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 0.65rem;
+    margin-bottom: 0.4rem;
   }
 
   .hero-tamil-title {
@@ -2103,32 +2149,37 @@ a {
 
   .hero-english-tagline {
     font-size: 1.15rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 
   .hero-tamil-desc {
     font-size: 0.88rem;
-    margin: 0 auto 1rem;
+    margin: 0 auto 0.75rem;
   }
 
   .hero-actions-container {
     display: none;
   }
 
+  .logo-3d-scene-container,
   .logo-3d-scene {
     max-width: 270px;
     height: 270px;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    margin: 0 auto;
   }
 
   .logo-3d-wrapper {
-    width: 175px;
-    height: 175px;
+    width: 155px;
+    height: 155px;
   }
 
   .organic-ground-platform {
     bottom: 4%;
-    width: 230px;
-    height: 60px;
+    width: 210px;
+    height: 55px;
   }
 }
 
@@ -2424,13 +2475,10 @@ a {
   font-weight: 600;
 }
 
-.hero-mobile-rating-wrapper {
-  display: none;
-}
-
-.hero-desktop-rating-wrapper {
-  display: block;
-  margin: 1.25rem 0;
+.hero-section-rating {
+  display: flex;
+  justify-content: flex-start;
+  margin: 0.25rem 0 0.5rem;
 }
 
 .hero-desktop-call-row {
@@ -2440,14 +2488,29 @@ a {
 }
 
 /* ============================================================== */
-/* 3-COLUMN EDITORIAL PRODUCT GRID & VIEW MORE (IN 3s)             */
+/* 5-COLUMN EDITORIAL PRODUCT GRID & PROGRESSIVE VIEW MORE        */
 /* ============================================================== */
 
+.editorial-5col-grid,
 .editorial-3col-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(1rem, 2.5vw, 1.75rem);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(10px, 1.6vw, 18px);
   margin-bottom: 2.5rem;
+}
+
+@media (max-width: 1200px) {
+  .editorial-5col-grid,
+  .editorial-3col-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .editorial-5col-grid,
+  .editorial-3col-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .product-grid-cell {
@@ -2576,9 +2639,10 @@ a {
   }
 
   .site-content {
-    padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
+  .editorial-5col-grid,
   .editorial-3col-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(8px, 2.5vw, 12px);
@@ -2592,6 +2656,14 @@ a {
   .view-more-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .editorial-5col-grid,
+  .editorial-3col-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 }
 

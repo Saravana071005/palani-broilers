@@ -6,23 +6,23 @@ function Logo3DShowcase() {
   const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
+    // Only enable mouse tilt on non-touch desktop screens and when reduced motion is not requested
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    if (window.innerWidth <= 768 || isTouchDevice || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return
+    }
+
+    const container = containerRef.current
+    if (!container) return
+
     const handleMouseMove = (e) => {
-      // Only enable mouse tilt on desktop screens and when reduced motion is NOT requested
-      if (window.innerWidth <= 768 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return
-      }
-
-      const container = containerRef.current
-      if (!container) return
-
       const rect = container.getBoundingClientRect()
-      // If mouse is somewhat near the showcase
-      const padding = 100
+      // Check if mouse is near the container
       if (
-        e.clientX < rect.left - padding ||
-        e.clientX > rect.right + padding ||
-        e.clientY < rect.top - padding ||
-        e.clientY > rect.bottom + padding
+        e.clientX < rect.left - 40 ||
+        e.clientX > rect.right + 40 ||
+        e.clientY < rect.top - 40 ||
+        e.clientY > rect.bottom + 40
       ) {
         setTilt({ x: 0, y: 0, scale: 1 })
         setIsHovered(false)
@@ -34,11 +34,11 @@ function Logo3DShowcase() {
       const deltaX = (e.clientX - centerX) / (rect.width / 2)
       const deltaY = (e.clientY - centerY) / (rect.height / 2)
 
-      // Clamp max tilt angles to +/- 12 degrees
-      const rotY = Math.max(-12, Math.min(12, deltaX * 12))
-      const rotX = Math.max(-12, Math.min(12, -deltaY * 12))
+      // Subtle, controlled tilt angles (+/- 8 degrees max)
+      const rotY = Math.max(-8, Math.min(8, deltaX * 8))
+      const rotX = Math.max(-8, Math.min(8, -deltaY * 8))
 
-      setTilt({ x: rotX, y: rotY, scale: 1.04 })
+      setTilt({ x: rotX, y: rotY, scale: 1.02 })
       setIsHovered(true)
     }
 
@@ -48,30 +48,25 @@ function Logo3DShowcase() {
     }
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true })
-    const node = containerRef.current
-    if (node) {
-      node.addEventListener('mouseleave', handleMouseLeave)
-    }
+    container.addEventListener('mouseleave', handleMouseLeave)
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
-      if (node) {
-        node.removeEventListener('mouseleave', handleMouseLeave)
-      }
+      container.removeEventListener('mouseleave', handleMouseLeave)
     }
   }, [])
 
   return (
     <div
       ref={containerRef}
-      className="logo-3d-scene"
+      className="logo-3d-scene-container"
       aria-label="Palani Broilers 3D Animated Logo"
     >
-      {/* Background Luminous Light Rings */}
+      {/* Background Luminous Light Rings - Strictly Bounded */}
       <div className="logo-light-ring ring-outer" aria-hidden="true" />
       <div className="logo-light-ring ring-inner" aria-hidden="true" />
 
-      {/* Floating Botanical Leaves */}
+      {/* Floating Botanical Leaves & Ambient Sparks - Strictly Contained */}
       <div className="floating-botanicals" aria-hidden="true">
         <span className="botanical-leaf leaf-1">🌿</span>
         <span className="botanical-leaf leaf-2">🍃</span>
@@ -82,7 +77,7 @@ function Logo3DShowcase() {
         <span className="spark-particle spark-3" />
       </div>
 
-      {/* Organic Moss / Botanical Ground Pedestal */}
+      {/* Organic Moss Pedestal Platform */}
       <div className="organic-ground-platform" aria-hidden="true">
         <div className="platform-pedestal">
           <div className="pedestal-moss-surface" />
@@ -91,7 +86,7 @@ function Logo3DShowcase() {
         <div className="platform-shadow" />
       </div>
 
-      {/* 3D Floating Physical Logo Badge */}
+      {/* 3D Physical Logo Badge */}
       <div
         className={`logo-3d-wrapper ${!isHovered ? 'is-auto-floating' : ''}`}
         style={{
@@ -99,20 +94,19 @@ function Logo3DShowcase() {
           transition: isHovered ? 'transform 0.15s ease-out' : 'transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)'
         }}
       >
-        {/* Shadow cast by floating badge onto the platform */}
+        {/* Shadow cast on the platform */}
         <div className="badge-drop-shadow" aria-hidden="true" />
 
-        {/* 3D Extruded Physical Badge Construction */}
+        {/* 3D Physical Badge Layers */}
         <div className="badge-physical-disc">
-          {/* Depth Extrusion Layers */}
           <div className="badge-extrusion-layer layer-back" />
           <div className="badge-extrusion-layer layer-mid" />
           <div className="badge-extrusion-layer layer-front" />
 
-          {/* Golden / Sage Specular Rim Ring */}
+          {/* Specular Rim */}
           <div className="badge-specular-ring" />
 
-          {/* Actual Palani Broilers Logo Face */}
+          {/* Front Face with actual Palani Broilers Logo */}
           <div className="badge-face">
             <img
               src="/logo.png"
@@ -120,7 +114,6 @@ function Logo3DShowcase() {
               className="badge-logo-img"
               loading="eager"
             />
-            {/* Shimmer / Gloss Highlight */}
             <div className="badge-gloss-overlay" />
           </div>
         </div>

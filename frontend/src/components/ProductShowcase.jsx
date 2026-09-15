@@ -12,11 +12,12 @@ function ProductShowcase({
   searchQuery,
   onSearchChange,
 }) {
-  const [visibleCount, setVisibleCount] = useState(3)
+  // viewStep: 0 -> 5 products, 1 -> 10 products, 2 -> 15 products, 3 -> ALL products
+  const [viewStep, setViewStep] = useState(0)
 
-  // Reset to 3 items whenever category or search query changes
+  // Reset to initial 5 products whenever category or search changes
   useEffect(() => {
-    setVisibleCount(3)
+    setViewStep(0)
   }, [selectedCategory, searchQuery])
 
   // Category mapping helper
@@ -88,25 +89,36 @@ function ProductShowcase({
     return [...inStock, ...outOfStock]
   }, [filteredProducts])
 
-  // Slice to currently visible count
+  // Determine how many products to show based on viewStep
+  // Initial (step 0): 5
+  // Step 1: 10
+  // Step 2: 15
+  // Step 3: ALL remaining
+  const visibleCount = useMemo(() => {
+    if (viewStep === 0) return Math.min(5, sortedProducts.length)
+    if (viewStep === 1) return Math.min(10, sortedProducts.length)
+    if (viewStep === 2) return Math.min(15, sortedProducts.length)
+    return sortedProducts.length
+  }, [viewStep, sortedProducts.length])
+
   const displayedProducts = useMemo(() => {
     return sortedProducts.slice(0, visibleCount)
   }, [sortedProducts, visibleCount])
 
+  const hasMore = visibleCount < sortedProducts.length
+  const canShowLess = !hasMore && sortedProducts.length > 5
+
   const handleViewMore = () => {
-    setVisibleCount((prev) => prev + 3)
+    setViewStep((prev) => prev + 1)
   }
 
   const handleShowLess = () => {
-    setVisibleCount(3)
+    setViewStep(0)
     const el = document.getElementById('products')
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
-
-  const hasMore = visibleCount < sortedProducts.length
-  const canShowLess = !hasMore && sortedProducts.length > 3
 
   return (
     <section id="products" className="catalogue-section" aria-labelledby="showcase-heading">
@@ -138,10 +150,10 @@ function ProductShowcase({
         </label>
       </div>
 
-      {/* 3-Column Desktop Grid & 2-Column Mobile Grid */}
+      {/* 5-Column Desktop Grid & 2-Column Mobile Grid */}
       {displayedProducts.length > 0 ? (
         <>
-          <div className="editorial-3col-grid">
+          <div className="editorial-5col-grid">
             {displayedProducts.map((product, idx) => {
               const categoryName = categoryMap[product.category] || product.category
 
@@ -162,7 +174,7 @@ function ProductShowcase({
             })}
           </div>
 
-          {/* Progressive View More / Show Less Button */}
+          {/* 3-Step View More / Show Less Button */}
           {(hasMore || canShowLess) && (
             <div className="view-more-container">
               {hasMore ? (

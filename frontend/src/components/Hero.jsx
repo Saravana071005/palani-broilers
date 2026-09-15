@@ -38,43 +38,46 @@ function Hero({ contact }) {
         <span className="hero-bg-leaf leaf-bg-2">🌿</span>
       </div>
 
-      {/* Mobile-only Google Rating at top (unobstructed) */}
-      <div className="hero-mobile-rating-wrapper">
-        <GoogleRatingBadge />
-      </div>
-
-      {/* 3D Logo Showcase Column (unobstructed by any mobile buttons) */}
-      <div className="hero-right-column">
+      {/* 3D Logo Showcase (Right column on desktop, 1st element on mobile) */}
+      <div className="hero-section-logo">
         <Logo3DShowcase />
       </div>
 
-      {/* Left Column: Editorial Headline, Tagline, Description & Desktop Google Rating */}
-      <div className="hero-left-column">
+      {/* Google Rating (Below description on desktop, 2nd element on mobile) */}
+      <div className="hero-section-rating">
+        <GoogleRatingBadge />
+      </div>
+
+      {/* Brand Badge (3rd element on mobile) */}
+      <div className="hero-section-badge">
         <div className="hero-brand-badge">
           <Sparkles size={13} className="text-coral" />
           <span>PALANI BROILERS · THANJAVUR</span>
         </div>
+      </div>
 
-        <div className="hero-heading-group">
-          <h1 id="hero-title-tamil" className="hero-tamil-title">
-            தினமும் புதிய,<br />
-            உயர்தர இறைச்சி
-          </h1>
-          <p className="hero-english-tagline">
-            “Fresh. Quality. Everyday.”
-          </p>
-        </div>
+      {/* Tamil Heading (4th element on mobile) */}
+      <div className="hero-section-title">
+        <h1 id="hero-title-tamil" className="hero-tamil-title">
+          தினமும் புதிய,<br />
+          உயர்தர இறைச்சி
+        </h1>
+      </div>
 
+      {/* Tagline (5th element on mobile) */}
+      <div className="hero-section-tagline">
+        <p className="hero-english-tagline">
+          “Fresh. Quality. Everyday.”
+        </p>
+      </div>
+
+      {/* Description (6th element on mobile) */}
+      <div className="hero-section-desc">
         <p className="hero-tamil-desc">
           பழனி பிராய்லர்ஸ் வழங்கும் தரமான பிராய்லர், நாட்டுக்கோழி, ஆட்டுக்கறி, மீன் மற்றும் கடல் உணவுகளை எளிதாக தேர்வு செய்து உடனே ஆர்டர் செய்திடுங்கள்.
         </p>
 
-        {/* Desktop-only Google Rating */}
-        <div className="hero-desktop-rating-wrapper">
-          <GoogleRatingBadge />
-        </div>
-
-        {/* Desktop optional call button */}
+        {/* Desktop Call Row */}
         {phone && (
           <div className="hero-desktop-call-row">
             <a href={`tel:${phone}`} className="hero-btn-call">
