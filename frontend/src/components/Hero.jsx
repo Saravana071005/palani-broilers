@@ -1,4 +1,4 @@
-import { ArrowDownRight, PhoneCall, Sparkles } from 'lucide-react'
+import { PhoneCall, Sparkles } from 'lucide-react'
 import Logo3DShowcase from './Logo3DShowcase'
 
 function Hero({ contact }) {
@@ -6,7 +6,15 @@ function Hero({ contact }) {
 
   return (
     <section id="top" className="editorial-hero-showcase" aria-labelledby="hero-title-tamil">
-      {/* Left Column: Editorial Headline & Actions */}
+      {/* Subtle organic ambient background elements */}
+      <div className="hero-ambient-bg" aria-hidden="true">
+        <div className="hero-ambient-glow glow-1" />
+        <div className="hero-ambient-glow glow-2" />
+        <span className="hero-bg-leaf leaf-bg-1">🍃</span>
+        <span className="hero-bg-leaf leaf-bg-2">🌿</span>
+      </div>
+
+      {/* Left Column: Editorial Headline & Single Call Now Action */}
       <div className="hero-left-column">
         <div className="hero-brand-badge">
           <Sparkles size={13} className="text-coral" />
@@ -27,15 +35,11 @@ function Hero({ contact }) {
           பழனி பிராய்லர்ஸ் வழங்கும் தரமான பிராய்லர், நாட்டுக்கோழி, ஆட்டுக்கறி, மீன் மற்றும் கடல் உணவுகளை எளிதாக தேர்வு செய்து உடனே ஆர்டர் செய்திடுங்கள்.
         </p>
 
+        {/* Only the Call Now action is shown */}
         <div className="hero-actions-container">
-          <a href="#products" className="hero-btn-primary">
-            <span>பொருட்களை பார்க்க</span>
-            <ArrowDownRight size={17} />
-          </a>
-
           {phone ? (
             <a href={`tel:${phone}`} className="hero-btn-call">
-              <PhoneCall size={16} />
+              <PhoneCall size={17} />
               <span>☎ Call Now</span>
             </a>
           ) : null}
