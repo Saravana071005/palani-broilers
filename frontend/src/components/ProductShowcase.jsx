@@ -98,7 +98,7 @@ function ProductShowcase({
       <div className="catalogue-tools-header">
         <div className="catalogue-headline">
           <h2 id="showcase-heading">எங்கள் பொருட்கள்</h2>
-          <span>/ Daily Catalogue</span>
+          <span>Daily Catalogue</span>
         </div>
 
         <label className="minimal-search-box" aria-label="Search products">

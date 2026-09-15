@@ -1,61 +1,50 @@
 import { ArrowDownRight, PhoneCall, Sparkles } from 'lucide-react'
-import FeaturedProduct from './FeaturedProduct'
+import Logo3DShowcase from './Logo3DShowcase'
 
-function Hero({ contact, featuredProduct, onProductClick, categoryName }) {
-  const phone = String(contact?.mainPhone || '').replace(/[^\d+]/g, '')
+function Hero({ contact }) {
+  const phone = contact?.mainPhone ? String(contact.mainPhone).replace(/[^\d+]/g, '') : ''
 
   return (
-    <section id="top" className="editorial-hero-compact" aria-labelledby="hero-main-title">
-      {/* Editorial Copy */}
-      <div className="hero-copy-column">
-        <div className="hero-lead-badge">
+    <section id="top" className="editorial-hero-showcase" aria-labelledby="hero-title-tamil">
+      {/* Left Column: Editorial Headline & Actions */}
+      <div className="hero-left-column">
+        <div className="hero-brand-badge">
           <Sparkles size={13} className="text-coral" />
-          <span>Palani Broilers · Thanjavur</span>
+          <span>PALANI BROILERS · THANJAVUR</span>
         </div>
 
-        <div className="hero-title-group">
-          <h1 id="hero-main-title" className="hero-tamil-headline">
-            தினமும் புதிய, உயர்தர இறைச்சி
+        <div className="hero-heading-group">
+          <h1 id="hero-title-tamil" className="hero-tamil-title">
+            தினமும் புதிய,<br />
+            உயர்தர இறைச்சி
           </h1>
-          <p className="hero-tagline-editorial">
+          <p className="hero-english-tagline">
             “Fresh. Quality. Everyday.”
           </p>
         </div>
 
-        <p className="hero-description">
-          பிராய்லர், நாட்டுக்கோழி, ஆட்டுக்கறி மற்றும் கடல் உணவுகளை உடனுக்குடன் எளிதாக ஆர்டர் செய்திடுங்கள்.
+        <p className="hero-tamil-desc">
+          பழனி பிராய்லர்ஸ் வழங்கும் தரமான பிராய்லர், நாட்டுக்கோழி, ஆட்டுக்கறி, மீன் மற்றும் கடல் உணவுகளை எளிதாக தேர்வு செய்து உடனே ஆர்டர் செய்திடுங்கள்.
         </p>
 
-        <div className="hero-cta-row">
-          <a href="#products" className="hero-cta-products">
+        <div className="hero-actions-container">
+          <a href="#products" className="hero-btn-primary">
             <span>பொருட்களை பார்க்க</span>
-            <ArrowDownRight size={16} />
+            <ArrowDownRight size={17} />
           </a>
 
-          {phone && (
-            <a href={`tel:${phone}`} className="hero-cta-call">
+          {phone ? (
+            <a href={`tel:${phone}`} className="hero-btn-call">
               <PhoneCall size={16} />
-              <span>Call Now</span>
+              <span>☎ Call Now</span>
             </a>
-          )}
+          ) : null}
         </div>
       </div>
 
-      {/* Immediate Product Imagery / Featured Spotlight */}
-      <div className="hero-media-column">
-        {featuredProduct ? (
-          <FeaturedProduct
-            product={featuredProduct}
-            onProductClick={onProductClick}
-            categoryName={categoryName}
-          />
-        ) : (
-          <div className="hero-spotlight-card p-8 text-center bg-white border border-sage-border rounded-2xl">
-            <img src="/logo.png" alt="Palani Broilers" className="w-20 h-20 mx-auto mb-3 rounded-full" />
-            <h3 className="font-tamil font-bold text-forest-deep text-lg">பழனி பிராய்லர்ஸ்</h3>
-            <p className="text-earth-muted text-xs uppercase tracking-wider">FRESH MEAT & SEAFOOD</p>
-          </div>
-        )}
+      {/* Right Column: 3D Logo Showcase & Organic Platform */}
+      <div className="hero-right-column">
+        <Logo3DShowcase />
       </div>
     </section>
   )

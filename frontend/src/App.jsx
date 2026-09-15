@@ -157,13 +157,9 @@ function App() {
       <Header contact={contact} onOpenHelp={handleOpenHelp} />
 
       <main>
-        {/* Compact Editorial Hero */}
-        <Hero
-          contact={contact}
-          featuredProduct={featuredHeroProduct}
-          onProductClick={handleProductClick}
-          categoryName={featuredCategoryName}
-        />
+        {/* Compact Editorial Hero with 3D Logo Showcase */}
+        <Hero contact={contact} />
+
 
         {/* Product Showcase Section */}
         <div className="site-content">

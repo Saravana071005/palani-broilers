@@ -1625,6 +1625,480 @@ a {
   }
 }
 
+/* ============================================================== */
+/* 3D LOGO SHOWCASE, ORGANIC PLATFORM & TWO-COLUMN HERO STYLES     */
+/* ============================================================== */
+
+.editorial-hero-showcase {
+  max-width: 1400px;
+  margin: 0.5rem auto 2.5rem;
+  padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 3.5vw, 2.5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+  position: relative;
+}
+
+.hero-left-column {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background: var(--sage-light);
+  border: 1px solid var(--sage-border);
+  color: var(--forest);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 1rem;
+}
+
+.hero-heading-group {
+  margin-bottom: 1rem;
+}
+
+.hero-tamil-title {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  line-height: 1.08;
+  color: var(--forest-deep);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+}
+
+.hero-english-tagline {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(1.3rem, 2.5vw, 2.2rem);
+  color: var(--earth);
+  margin: 0;
+}
+
+.hero-tamil-desc {
+  max-width: 520px;
+  font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+  line-height: 1.65;
+  color: var(--earth-muted);
+  margin: 0 0 1.75rem;
+}
+
+.hero-actions-container {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.hero-btn-primary {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background: var(--forest-deep);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: transform 0.2s ease, background 0.2s ease;
+  box-shadow: 0 4px 16px rgba(18, 39, 20, 0.18);
+}
+
+.hero-btn-primary:hover {
+  background: var(--forest);
+  transform: translateY(-2px);
+}
+
+.hero-btn-call {
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 9999px;
+  background: var(--coral);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.92rem;
+  box-shadow: 0 6px 20px var(--coral-glow);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.hero-btn-call:hover {
+  background: var(--coral-hover);
+  transform: translateY(-2px);
+}
+
+/* 3D Scene Container */
+.hero-right-column {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.logo-3d-scene {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  isolation: isolate;
+}
+
+/* Background Light Rings */
+.logo-light-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ring-outer {
+  width: min(85vw, 360px);
+  height: min(85vw, 360px);
+  border: 1.5px dashed rgba(26, 55, 28, 0.22);
+  animation: ringRotate 30s linear infinite;
+}
+
+.ring-inner {
+  width: min(70vw, 290px);
+  height: min(70vw, 290px);
+  border: 1px solid rgba(238, 83, 47, 0.25);
+  animation: ringRotateCounter 20s linear infinite;
+}
+
+/* Floating Botanicals & Particles */
+.floating-botanicals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 1;
+}
+
+.botanical-leaf {
+  position: absolute;
+  font-size: 1.3rem;
+  user-select: none;
+  filter: drop-shadow(0 4px 8px rgba(18, 39, 20, 0.15));
+}
+
+.leaf-1 {
+  top: 15%;
+  left: 10%;
+  animation: leafFloat1 6s ease-in-out infinite;
+}
+
+.leaf-2 {
+  top: 25%;
+  right: 8%;
+  font-size: 1.15rem;
+  animation: leafFloat2 7s ease-in-out infinite 1s;
+}
+
+.leaf-3 {
+  bottom: 28%;
+  left: 6%;
+  font-size: 1.1rem;
+  animation: leafFloat1 8s ease-in-out infinite 2s;
+}
+
+.leaf-4 {
+  bottom: 22%;
+  right: 12%;
+  animation: leafFloat2 6.5s ease-in-out infinite 0.5s;
+}
+
+.spark-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+  box-shadow: 0 0 10px var(--coral);
+  opacity: 0.6;
+}
+
+.spark-1 {
+  top: 20%;
+  left: 30%;
+  animation: particlePulse 4s ease-in-out infinite;
+}
+
+.spark-2 {
+  bottom: 35%;
+  right: 25%;
+  width: 8px;
+  height: 8px;
+  background: #B9D59A;
+  box-shadow: 0 0 12px #B9D59A;
+  animation: particlePulse 5s ease-in-out infinite 1.5s;
+}
+
+.spark-3 {
+  top: 65%;
+  left: 20%;
+  animation: particlePulse 4.5s ease-in-out infinite 0.8s;
+}
+
+/* Organic Moss Ground Platform */
+.organic-ground-platform {
+  position: absolute;
+  bottom: 6%;
+  width: min(80vw, 320px);
+  height: 75px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.platform-pedestal {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.pedestal-moss-surface {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 30%, #D8E5D4 0%, #AEC4A8 45%, #6A8664 85%, #425B3D 100%);
+  box-shadow: 
+    inset 0 2px 6px rgba(255, 255, 255, 0.6),
+    0 12px 28px rgba(18, 39, 20, 0.22);
+  transform: rotateX(60deg);
+}
+
+.pedestal-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(227, 236, 224, 0.7);
+  transform: rotateX(60deg);
+}
+
+.platform-shadow {
+  position: absolute;
+  bottom: -15px;
+  left: 5%;
+  width: 90%;
+  height: 45px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(18, 39, 20, 0.35), transparent 70%);
+  filter: blur(10px);
+}
+
+/* 3D Physical Badge Construction */
+.logo-3d-wrapper {
+  position: relative;
+  z-index: 3;
+  width: min(60vw, 240px);
+  height: min(60vw, 240px);
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.logo-3d-wrapper.is-auto-floating {
+  animation: logoAmbientFloat 5s ease-in-out infinite;
+}
+
+.badge-drop-shadow {
+  position: absolute;
+  bottom: -40px;
+  width: 190px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(18, 39, 20, 0.45), transparent 70%);
+  filter: blur(10px);
+  transform: translateZ(-35px);
+  pointer-events: none;
+}
+
+.badge-physical-disc {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  box-shadow: 
+    0 25px 50px -12px rgba(18, 39, 20, 0.28),
+    0 0 0 1px rgba(26, 55, 28, 0.12);
+}
+
+/* Extrusion Layers (Giving physical thickness) */
+.badge-extrusion-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.layer-back {
+  background: #0D1C0E;
+  transform: translateZ(-16px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.layer-mid {
+  background: #1A371C;
+  transform: translateZ(-8px);
+}
+
+.layer-front {
+  background: #254A28;
+  transform: translateZ(0px);
+}
+
+/* Specular Rim Ring */
+.badge-specular-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(135deg, rgba(238, 83, 47, 0.45) 0%, transparent 45%, rgba(227, 236, 224, 0.7) 100%);
+  transform: translateZ(4px);
+  pointer-events: none;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+}
+
+/* Front Face containing Palani Broilers Logo */
+.badge-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #ffffff;
+  transform: translateZ(8px);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.badge-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.badge-gloss-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.06) 45%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Animations for 3D Showcase */
+@keyframes logoAmbientFloat {
+  0%, 100% {
+    transform: perspective(1000px) translateY(0px) rotateX(2.5deg) rotateY(0deg);
+  }
+  50% {
+    transform: perspective(1000px) translateY(-14px) rotateX(-2.5deg) rotateY(4deg);
+  }
+}
+
+@keyframes ringRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ringRotateCounter {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes leafFloat1 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(8deg);
+  }
+}
+
+@keyframes leafFloat2 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(-10deg);
+  }
+}
+
+@keyframes particlePulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.25);
+  }
+}
+
+/* Mobile Hero Responsiveness */
+@media (max-width: 767px) {
+  .editorial-hero-showcase {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 1.5rem 0.5rem 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .hero-brand-badge {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-tamil-title {
+    font-size: clamp(1.85rem, 8vw, 2.7rem);
+  }
+
+  .hero-english-tagline {
+    font-size: 1.2rem;
+  }
+
+  .hero-tamil-desc {
+    font-size: 0.88rem;
+    margin: 0 auto 1.4rem;
+  }
+
+  .hero-actions-container {
+    justify-content: center;
+  }
+
+  .logo-3d-scene {
+    max-width: 280px;
+    height: 280px;
+  }
+
+  .logo-3d-wrapper {
+    width: 175px;
+    height: 175px;
+  }
+
+  .organic-ground-platform {
+    bottom: 4%;
+    width: 230px;
+    height: 60px;
+  }
+}
+
 /* Accessibility: respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1633,5 +2107,12 @@ a {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .logo-3d-wrapper.is-auto-floating {
+    animation: none !important;
+  }
+  .ring-outer, .ring-inner, .botanical-leaf, .spark-particle {
+    animation: none !important;
+  }
 }
+
 
