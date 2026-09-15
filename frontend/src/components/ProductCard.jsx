@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react'
 function ProductCard({ product, index, isFeature = false, onClick, categoryName }) {
   const cardRef = useRef(null)
   const [tiltStyle, setTiltStyle] = useState({})
+  const [imgError, setImgError] = useState(false)
 
   const isOutOfStock = product.stockStatus === 'out-of-stock' || product.lowStock
   const displayIndex = product.productIndex || `PB-${String(index + 1).padStart(3, '0')}`
@@ -23,12 +24,12 @@ function ProductCard({ product, index, isFeature = false, onClick, categoryName 
     const centerX = rect.width / 2
     const centerY = rect.height / 2
 
-    // Max tilt angles: 6 degrees
-    const rotateX = ((y - centerY) / centerY) * -5
-    const rotateY = ((x - centerX) / centerX) * 5
+    // Max tilt angles: 5 degrees
+    const rotateX = ((y - centerY) / centerY) * -4
+    const rotateY = ((x - centerX) / centerX) * 4
 
     setTiltStyle({
-      transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`,
+      transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.015, 1.015, 1.015)`,
       transition: 'transform 0.1s ease-out'
     })
   }
@@ -36,7 +37,7 @@ function ProductCard({ product, index, isFeature = false, onClick, categoryName 
   const handleMouseLeave = () => {
     setTiltStyle({
       transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)',
-      transition: 'transform 0.4s ease-out'
+      transition: 'transform 0.35s ease-out'
     })
   }
 
@@ -53,18 +54,6 @@ function ProductCard({ product, index, isFeature = false, onClick, categoryName 
         aria-label={`${product.nameEnglish} (${product.nameTamil}) - ${isOutOfStock ? 'Out of stock' : 'Available'}`}
       >
         <div className="product-card-media">
-          {product.imageUrl ? (
-            <img
-              src={product.imageUrl}
-              alt={product.nameEnglish || 'Product'}
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-sage-light text-forest font-bold text-lg">
-              PB
-            </div>
-          )}
-
           {/* Product Index Badge */}
           <span className="product-index-badge" aria-label={`Code: ${displayIndex}`}>
             {displayIndex}
@@ -76,6 +65,24 @@ function ProductCard({ product, index, isFeature = false, onClick, categoryName 
               {categoryName}
             </span>
           )}
+
+          {/* Clean Image Layer with Object-Fit Contain */}
+          <div className="image-animation-layer">
+            {product.imageUrl && !imgError ? (
+              <img
+                src={product.imageUrl}
+                alt={product.nameEnglish || product.nameTamil || 'Product'}
+                loading="lazy"
+                onError={() => setImgError(true)}
+                className="product-image"
+              />
+            ) : (
+              <div className="product-image-fallback" aria-hidden="true">
+                <span className="fallback-monogram">PB</span>
+                <span className="fallback-text">{product.nameEnglish || 'Palani Broilers'}</span>
+              </div>
+            )}
+          </div>
 
           {/* Stock Status Badge */}
           <span

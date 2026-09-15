@@ -22,6 +22,8 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [appOpenStatus, setAppOpenStatus] = useState('')
   const [appUnavailable, setAppUnavailable] = useState(false)
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true)
+  const [productsError, setProductsError] = useState(null)
 
   useEffect(() => {
     fetchProducts()
@@ -33,13 +35,19 @@ function App() {
   }, [])
 
   const fetchProducts = async () => {
+    setIsLoadingProducts(true)
+    setProductsError(null)
     try {
-      const response = await axios.get(`${API_URL}/api/products`, {
-        params: { category: selectedCategory }
-      })
-      setProducts(response.data || [])
+      // Normalize category: only pass category param if it's a specific valid category, not 'all' or empty
+      const isAll = !selectedCategory || selectedCategory === 'all' || selectedCategory === 'All Products'
+      const params = isAll ? {} : { category: selectedCategory }
+      const response = await axios.get(`${API_URL}/api/products`, { params })
+      setProducts(Array.isArray(response.data) ? response.data : [])
     } catch (error) {
       console.error('Error fetching products:', error)
+      setProductsError(error?.message || 'Failed to fetch products')
+    } finally {
+      setIsLoadingProducts(false)
     }
   }
 
@@ -171,6 +179,9 @@ function App() {
             onCategoryChange={setSelectedCategory}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            isLoading={isLoadingProducts}
+            error={productsError}
+            onRetry={fetchProducts}
           />
 
           {/* Contact Section */}

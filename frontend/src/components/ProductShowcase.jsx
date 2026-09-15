@@ -4,13 +4,16 @@ import ProductCard from './ProductCard'
 import CategoryNav from './CategoryNav'
 
 function ProductShowcase({
-  products,
-  categories,
+  products = [],
+  categories = [],
   onProductClick,
-  selectedCategory,
+  selectedCategory = 'all',
   onCategoryChange,
-  searchQuery,
+  searchQuery = '',
   onSearchChange,
+  isLoading = false,
+  error = null,
+  onRetry,
 }) {
   // viewStep: 0 -> 5 products, 1 -> 10 products, 2 -> 15 products, 3 -> ALL products
   const [viewStep, setViewStep] = useState(0)
@@ -20,57 +23,85 @@ function ProductShowcase({
     setViewStep(0)
   }, [selectedCategory, searchQuery])
 
-  // Category mapping helper
-  const categoryMap = useMemo(() => {
-    const map = {}
-    categories.forEach((c) => {
-      map[c.slug] = c.name
-      map[c._id] = c.name
-    })
-    return map
+  // Bidirectional category mapping helper (slug <-> _id <-> name)
+  const { categoryMap, categoryIdToSlug, categorySlugToId } = useMemo(() => {
+    const nameMap = {}
+    const idToSlug = {}
+    const slugToId = {}
+    if (Array.isArray(categories)) {
+      categories.forEach((c) => {
+        if (!c) return
+        if (c.slug) nameMap[c.slug] = c.name
+        if (c._id) nameMap[c._id] = c.name
+        if (c.slug && c._id) {
+          idToSlug[String(c._id).toLowerCase()] = String(c.slug).toLowerCase()
+          slugToId[String(c.slug).toLowerCase()] = String(c._id).toLowerCase()
+        }
+      })
+    }
+    return { categoryMap: nameMap, categoryIdToSlug: idToSlug, categorySlugToId: slugToId }
   }, [categories])
+
+  // Normalize selectedCategory
+  const normCategory = useMemo(() => {
+    if (!selectedCategory || selectedCategory === 'all' || selectedCategory === 'All Products') {
+      return 'all'
+    }
+    return String(selectedCategory).trim().toLowerCase()
+  }, [selectedCategory])
 
   // Compute category product counts
   const categoryCounts = useMemo(() => {
-    const counts = { all: products.length }
-    products.forEach((p) => {
-      const cat = p.category || 'all'
-      counts[cat] = (counts[cat] || 0) + 1
-    })
+    const counts = { all: Array.isArray(products) ? products.length : 0 }
+    if (Array.isArray(products)) {
+      products.forEach((p) => {
+        if (!p) return
+        const cat = p.category || 'all'
+        counts[cat] = (counts[cat] || 0) + 1
+      })
+    }
     return counts
   }, [products])
 
-  // Filter products by category and search query (Tamil, English, index, category)
+  // Filter products by category and search query safely
   const filteredProducts = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
+    if (!products || !Array.isArray(products)) return []
+
+    const query = String(searchQuery || '').trim().toLowerCase()
 
     return products.filter((product) => {
-      // Category filter
-      if (selectedCategory !== 'all') {
-        const productCat = String(product.category || '').toLowerCase()
-        if (productCat !== selectedCategory.toLowerCase()) {
+      if (!product) return false
+
+      // Category filter: when 'all', include all products
+      if (normCategory !== 'all') {
+        const productCat = String(product.category || '').trim().toLowerCase()
+        const isMatch =
+          productCat === normCategory ||
+          productCat === categorySlugToId[normCategory] ||
+          productCat === categoryIdToSlug[normCategory]
+        if (!isMatch) {
           return false
         }
       }
 
-      // Search filter
+      // Search filter: when empty, keep all category products
       if (!query) return true
 
       const tamil = String(product.nameTamil || '').toLowerCase()
       const english = String(product.nameEnglish || '').toLowerCase()
       const index = String(product.productIndex || '').toLowerCase()
-      const category = String(product.category || '').toLowerCase()
+      const catVal = String(product.category || '').toLowerCase()
       const catName = String(categoryMap[product.category] || '').toLowerCase()
 
       return (
         tamil.includes(query) ||
         english.includes(query) ||
         index.includes(query) ||
-        category.includes(query) ||
+        catVal.includes(query) ||
         catName.includes(query)
       )
     })
-  }, [products, selectedCategory, searchQuery, categoryMap])
+  }, [products, normCategory, searchQuery, categoryMap, categorySlugToId, categoryIdToSlug])
 
   // Stable derived sorting: In-stock first, Out-of-stock last.
   const sortedProducts = useMemo(() => {
@@ -150,8 +181,28 @@ function ProductShowcase({
         </label>
       </div>
 
-      {/* 5-Column Desktop Grid & 2-Column Mobile Grid */}
-      {displayedProducts.length > 0 ? (
+      {/* State-based product rendering */}
+      {isLoading ? (
+        <div className="catalogue-loading-state" role="status" aria-live="polite">
+          <div className="product-loading-spinner" />
+          <p className="loading-title">பொருட்கள் ஏற்றப்படுகின்றன...</p>
+          <span className="loading-subtitle">Loading fresh catalogue...</span>
+        </div>
+      ) : error ? (
+        <div className="catalogue-error-state" role="alert">
+          <p className="error-title">பொருட்களை ஏற்ற முடியவில்லை</p>
+          <p className="error-subtitle">இணைய இணைப்பை சரிபார்த்து மீண்டும் முயற்சிக்கவும்.</p>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="view-more-btn retry-btn"
+            >
+              <span>மீண்டும் முயற்சி செய் (Retry)</span>
+            </button>
+          )}
+        </div>
+      ) : displayedProducts.length > 0 ? (
         <>
           <div className="editorial-5col-grid">
             {displayedProducts.map((product, idx) => {
