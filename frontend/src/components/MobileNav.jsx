@@ -1,41 +1,21 @@
-import { PhoneCall, ShoppingBag, HelpCircle } from 'lucide-react'
+import { PhoneCall } from 'lucide-react'
 
-function MobileNav({ contact, onOpenHelp }) {
-  const phone = String(contact?.mainPhone || '').replace(/[^\d+]/g, '')
+function MobileNav({ contact }) {
+  const phone = contact?.mainPhone ? String(contact.mainPhone).replace(/[^\d+]/g, '') : ''
+
+  if (!phone) return null
 
   return (
-    <nav className="mobile-sticky-action-bar" aria-label="Mobile quick actions">
-      <a href="#products" className="mobile-action-tab">
-        <ShoppingBag size={18} />
-        <span>பொருட்கள்</span>
-      </a>
-
-      <button
-        type="button"
-        onClick={onOpenHelp}
-        className="mobile-action-tab"
+    <div className="mobile-fixed-cta-container">
+      <a
+        href={`tel:${phone}`}
+        className="mobile-fixed-call-btn"
+        aria-label={`Call Palani Broilers at ${phone}`}
       >
-        <HelpCircle size={18} />
-        <span>உதவி</span>
-      </button>
-
-      {phone ? (
-        <a
-          href={`tel:${phone}`}
-          className="mobile-action-tab mobile-action-call-now"
-        >
-          <PhoneCall size={16} />
-          <span>CALL NOW</span>
-        </a>
-      ) : (
-        <a
-          href="#contact"
-          className="mobile-action-tab mobile-action-call-now"
-        >
-          <span>தொடர்பு</span>
-        </a>
-      )}
-    </nav>
+        <PhoneCall size={20} />
+        <span>☎ Call Now</span>
+      </a>
+    </div>
   )
 }
 

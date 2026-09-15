@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Menu, PhoneCall, X, HelpCircle } from 'lucide-react'
+import { Menu, PhoneCall, X, HelpCircle, Search } from 'lucide-react'
 
-function Header({ contact, onOpenHelp }) {
+function Header({ contact, onOpenHelp, onTriggerSearch }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
-  const phone = String(contact?.mainPhone || '').replace(/[^\d+]/g, '')
+  const phone = contact?.mainPhone ? String(contact.mainPhone).replace(/[^\d+]/g, '') : ''
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,10 +24,26 @@ function Header({ contact, onOpenHelp }) {
     }
   }
 
+  const handleSearchClick = () => {
+    closeMenu()
+    if (onTriggerSearch) {
+      onTriggerSearch()
+    } else {
+      const el = document.getElementById('products')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const input = el.querySelector('input[type="search"]')
+        if (input) {
+          setTimeout(() => input.focus(), 300)
+        }
+      }
+    }
+  }
+
   return (
     <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
       <div className="site-header-inner">
-        {/* Brand Left */}
+        {/* Brand Lockup */}
         <a href="#top" className="brand-lockup" aria-label="Palani Broilers Home">
           <img src="/logo.png" alt="Palani Broilers" />
           <div className="brand-text">
@@ -36,7 +52,7 @@ function Header({ contact, onOpenHelp }) {
           </div>
         </a>
 
-        {/* Desktop Nav Center / Right */}
+        {/* Desktop Navigation Links & Call Now */}
         <nav className="desktop-nav" aria-label="Primary navigation">
           <a href="#products">Products</a>
           <a href="#categories">Categories</a>
@@ -53,16 +69,27 @@ function Header({ contact, onOpenHelp }) {
           )}
         </nav>
 
-        {/* Mobile Menu Trigger */}
-        <button
-          type="button"
-          className="mobile-menu-btn"
-          onClick={() => setMobileMenuOpen(true)}
-          aria-label="Open navigation menu"
-          aria-expanded={mobileMenuOpen}
-        >
-          <Menu size={20} />
-        </button>
+        {/* Mobile Header Icons: Search + Menu (No Call Now in Mobile Header) */}
+        <div className="mobile-header-actions">
+          <button
+            type="button"
+            className="mobile-header-icon-btn"
+            onClick={handleSearchClick}
+            aria-label="Search products"
+          >
+            <Search size={19} />
+          </button>
+
+          <button
+            type="button"
+            className="mobile-header-icon-btn mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <Menu size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Mobile Nav Overlay Drawer */}
@@ -106,7 +133,7 @@ function Header({ contact, onOpenHelp }) {
               onClick={closeMenu}
             >
               <PhoneCall size={18} />
-              <span>இப்போது அழைக்கவும் ({phone})</span>
+              <span>☎ Call Now ({phone})</span>
             </a>
           )}
         </div>

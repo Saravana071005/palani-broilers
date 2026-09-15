@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 import Header from './components/Header'
 import Hero from './components/Hero'
-import ProductCarousel from './components/ProductCarousel'
+import ProductShowcase from './components/ProductShowcase'
 import ContactSection from './components/ContactSection'
 import HelpGuide from './components/HelpGuide'
 import Footer from './components/Footer'
@@ -163,7 +163,7 @@ function App() {
 
         {/* Product Showcase Section */}
         <div className="site-content">
-          <ProductCarousel
+          <ProductShowcase
             products={products}
             categories={categories}
             onProductClick={handleProductClick}
