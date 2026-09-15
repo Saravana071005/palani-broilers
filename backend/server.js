@@ -46,6 +46,8 @@ async function connectToDatabase() {
 // ================= CORS =================
 
 const allowedOrigins = new Set([
+  'https://palanibroilers.store',
+  'https://www.palanibroilers.store',
   'https://palani-broilers.vercel.app',
   'https://palani-broilers-admin.vercel.app',
   ...((process.env.ALLOWED_ORIGINS || '').split(',')
@@ -120,7 +122,7 @@ const corsOptions = {
 
     callback(new Error('Origin is not allowed by CORS'));
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 };
