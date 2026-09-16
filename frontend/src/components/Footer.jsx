@@ -6,7 +6,7 @@ function Footer({ contact, onOpenHelp }) {
   return (
     <footer className="minimal-editorial-footer">
       <div className="footer-brand">
-        <img src="/logo.png" alt="Palani Broilers" />
+        <img src="/logo.png" alt="Palani Broilers - பழனி பிராய்லர்ஸ் Thanjavur Logo" />
         <div>
           <span className="font-bold text-forest-deep font-tamil block text-sm">
             பழனி பிராய்லர்ஸ்
@@ -20,6 +20,7 @@ function Footer({ contact, onOpenHelp }) {
       <nav className="footer-links" aria-label="Footer navigation">
         <a href="#products">Products</a>
         <a href="#categories">Categories</a>
+        <a href="#about">About</a>
         <a href="#contact">Contact</a>
         <button
           type="button"

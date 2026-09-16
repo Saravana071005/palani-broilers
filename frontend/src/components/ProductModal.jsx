@@ -74,7 +74,7 @@ function ProductModal({
           {product.imageUrl ? (
             <img
               src={product.imageUrl}
-              alt={product.nameEnglish}
+              alt={`${product.nameTamil ? product.nameTamil + ' - ' : ''}${product.nameEnglish || 'Fresh Meat'} | Palani Broilers Thanjavur`}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-sage text-forest font-bold text-2xl">

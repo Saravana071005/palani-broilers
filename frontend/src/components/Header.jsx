@@ -45,7 +45,7 @@ function Header({ contact, onOpenHelp, onTriggerSearch }) {
       <div className="site-header-inner">
         {/* Brand Lockup */}
         <a href="#top" className="brand-lockup" aria-label="Palani Broilers Home">
-          <img src="/logo.png" alt="Palani Broilers" />
+          <img src="/logo.png" alt="Palani Broilers - பழனி பிராய்லர்ஸ் Thanjavur Logo" />
           <div className="brand-text">
             <span className="brand-title-tamil">பழனி பிராய்லர்ஸ்</span>
             <span className="brand-subtitle-en">PALANI BROILERS</span>
@@ -56,6 +56,7 @@ function Header({ contact, onOpenHelp, onTriggerSearch }) {
         <nav className="desktop-nav" aria-label="Primary navigation">
           <a href="#products">Products</a>
           <a href="#categories">Categories</a>
+          <a href="#about">About</a>
           <a href="#contact">Contact</a>
           <button type="button" onClick={handleHelpClick}>
             <HelpCircle size={15} />
@@ -117,13 +118,17 @@ function Header({ contact, onOpenHelp, onTriggerSearch }) {
             <span>Categories</span>
             <span className="nav-num">02</span>
           </a>
+          <a href="#about" onClick={closeMenu}>
+            <span>About</span>
+            <span className="nav-num">03</span>
+          </a>
           <a href="#contact" onClick={closeMenu}>
             <span>Contact</span>
-            <span className="nav-num">03</span>
+            <span className="nav-num">04</span>
           </a>
           <button type="button" onClick={handleHelpClick}>
             <span>Help Guide</span>
-            <span className="nav-num">04</span>
+            <span className="nav-num">05</span>
           </button>
 
           {phone && (

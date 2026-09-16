@@ -110,7 +110,7 @@ function Logo3DShowcase() {
           <div className="badge-face">
             <img
               src="/logo.png"
-              alt="Palani Broilers Logo"
+              alt="Palani Broilers - பழனி பிராய்லர்ஸ் Thanjavur Logo"
               className="badge-logo-img"
               loading="eager"
             />

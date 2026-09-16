@@ -59,6 +59,7 @@ function Hero({ contact }) {
       {/* Tamil Heading (4th element on mobile) */}
       <div className="hero-section-title">
         <h1 id="hero-title-tamil" className="hero-tamil-title">
+          <span className="sr-only">Palani Broilers (பழனி பிராய்லர்ஸ்) Thanjavur - </span>
           தினமும் புதிய,<br />
           உயர்தர இறைச்சி
         </h1>

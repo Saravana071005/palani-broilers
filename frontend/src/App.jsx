@@ -3,6 +3,7 @@ import axios from 'axios'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import ProductShowcase from './components/ProductShowcase'
+import AboutSection from './components/AboutSection'
 import ContactSection from './components/ContactSection'
 import HelpGuide from './components/HelpGuide'
 import Footer from './components/Footer'
@@ -183,6 +184,9 @@ function App() {
             error={productsError}
             onRetry={fetchProducts}
           />
+
+          {/* Editorial About Section for SEO & Business Story */}
+          <AboutSection contact={contact} />
 
           {/* Contact Section */}
           {contact && <ContactSection contact={contact} />}

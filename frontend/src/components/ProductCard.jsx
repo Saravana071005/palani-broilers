@@ -71,7 +71,7 @@ function ProductCard({ product, index, isFeature = false, onClick, categoryName 
             {product.imageUrl && !imgError ? (
               <img
                 src={product.imageUrl}
-                alt={product.nameEnglish || product.nameTamil || 'Product'}
+                alt={`${product.nameTamil ? product.nameTamil + ' - ' : ''}${product.nameEnglish || 'Fresh Meat'} | Palani Broilers Thanjavur`}
                 loading="lazy"
                 onError={() => setImgError(true)}
                 className="product-image"
