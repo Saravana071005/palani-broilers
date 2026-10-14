@@ -8,10 +8,11 @@ import ContactSection from './components/ContactSection'
 import HelpGuide from './components/HelpGuide'
 import Footer from './components/Footer'
 import MobileNav from './components/MobileNav'
-import ProductModal from './components/ProductModal'
+import AppChoiceModal from './components/AppChoiceModal'
 
 const API_URL = 'https://palani-broilers-api.vercel.app'
-const ANDROID_APP_INTENT = 'intent://open/#Intent;package=com.example.palaniposapp;component=com.example.palaniposapp/.MainActivity;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;end'
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.nextfuturetechnology.palanibroilers&hl=en_IN'
+const ANDROID_PACKAGE_ID = 'com.nextfuturetechnology.palanibroilers'
 
 function App() {
   const [products, setProducts] = useState([])
@@ -21,8 +22,6 @@ function App() {
   const [showModal, setShowModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [appOpenStatus, setAppOpenStatus] = useState('')
-  const [appUnavailable, setAppUnavailable] = useState(false)
   const [isLoadingProducts, setIsLoadingProducts] = useState(true)
   const [productsError, setProductsError] = useState(null)
 
@@ -72,61 +71,11 @@ function App() {
 
   const handleProductClick = (product) => {
     setSelectedProduct(product)
-    setAppOpenStatus('')
-    setAppUnavailable(false)
     setShowModal(true)
   }
 
-  const handleOpenApp = () => {
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-    const isAndroid = /Android/i.test(navigator.userAgent)
-
-    if (isIOS) {
-      // iOS custom scheme
-      const productId = selectedProduct?._id || selectedProduct?.productIndex || ''
-      window.location.href = `palanibroilers://product/${productId}`
-      setTimeout(() => {
-        setAppOpenStatus('Palani Broilers செயலி நிறுவப்படவில்லை.')
-        setAppUnavailable(true)
-      }, 1500)
-      return
-    }
-
-    if (!isAndroid) {
-      setAppOpenStatus('Palani Broilers APK ஆண்ட்ராய்டு போன்களுக்கானது. மொபைலில் திறந்து நிறுவவும்.')
-      setAppUnavailable(true)
-      return
-    }
-
-    setAppOpenStatus('செயலியைத் திறக்கிறது…')
-    let appOpened = false
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        appOpened = true
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange, { once: true })
-    window.location.href = ANDROID_APP_INTENT
-
-    window.setTimeout(() => {
-      if (!appOpened) {
-        setAppOpenStatus('Palani Broilers செயலி இன்னும் நிறுவப்படவில்லை.')
-        setAppUnavailable(true)
-      }
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }, 1300)
-  }
-
   const handleDownloadApp = () => {
-    const link = document.createElement('a')
-    link.href = '/palani-broilers.apk'
-    link.download = 'palani-broilers.apk'
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    setAppOpenStatus('APK பதிவிறக்கம் தொடங்கப்பட்டது...')
+    window.open(PLAY_STORE_URL, '_blank', 'noopener,noreferrer')
   }
 
   const handleOpenHelp = () => {
@@ -202,18 +151,13 @@ function App() {
       {/* Sticky Bottom Mobile Bar */}
       <MobileNav contact={contact} onOpenHelp={handleOpenHelp} />
 
-      {/* Premium Product Modal */}
+      {/* Official Palani Broilers App Choice Modal */}
       {showModal && (
-        <ProductModal
+        <AppChoiceModal
           product={selectedProduct}
-          onOpenApp={handleOpenApp}
-          onDownloadApp={handleDownloadApp}
-          onClose={() => setShowModal(false)}
-          appOpenStatus={appOpenStatus}
-          appUnavailable={appUnavailable}
-          contact={contact}
-          onNeedHelp={handleOpenHelp}
           categories={categories}
+          contact={contact}
+          onClose={() => setShowModal(false)}
         />
       )}
     </div>

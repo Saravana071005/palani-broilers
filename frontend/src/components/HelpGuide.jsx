@@ -12,8 +12,8 @@ const visualSteps = [
   {
     step: '02',
     title: 'APP பதிவிறக்கம் / திறக்கவும்',
-    subtitle: 'Install APK or Open App',
-    desc: 'Android போனில் Palani Broilers APK பதிவிறக்கம் செய்து நிறுவவும், அல்லது செயலியை நேரடியாக திறக்கவும்.',
+    subtitle: 'Install on Google Play or Open App',
+    desc: 'Google Play-ல் Palani Broilers செயலியைப் பதிவிறக்கம் செய்து நிறுவவும், அல்லது செயலியை நேரடியாக திறக்கவும்.',
     image: '/help/install.jpeg'
   },
   {
@@ -60,7 +60,7 @@ function HelpGuide({ onDownloadApp, contact }) {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-forest text-white text-xs font-bold transition hover:bg-forest-light"
           >
             <Download size={14} />
-            <span>APK பதிவிறக்கம்</span>
+            <span>Google Play</span>
           </button>
 
           {rawPhone && (
