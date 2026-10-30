@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Menu, PhoneCall, X, HelpCircle, Search } from 'lucide-react'
+import { Menu, PhoneCall, X, Search } from 'lucide-react'
 
-function Header({ contact, onOpenHelp, onTriggerSearch }) {
+function Header({ contact, onTriggerSearch }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -16,13 +16,6 @@ function Header({ contact, onOpenHelp, onTriggerSearch }) {
   }, [])
 
   const closeMenu = () => setMobileMenuOpen(false)
-
-  const handleHelpClick = () => {
-    closeMenu()
-    if (onOpenHelp) {
-      onOpenHelp()
-    }
-  }
 
   const handleSearchClick = () => {
     closeMenu()
@@ -57,11 +50,8 @@ function Header({ contact, onOpenHelp, onTriggerSearch }) {
           <a href="#products">Products</a>
           <a href="#categories">Categories</a>
           <a href="#about">About</a>
+          <a href="#comments">கருத்துகள்</a>
           <a href="#contact">Contact</a>
-          <button type="button" onClick={handleHelpClick}>
-            <HelpCircle size={15} />
-            <span>Help</span>
-          </button>
           {phone && (
             <a href={`tel:${phone}`} className="header-call-btn">
               <PhoneCall size={14} />
@@ -122,14 +112,14 @@ function Header({ contact, onOpenHelp, onTriggerSearch }) {
             <span>About</span>
             <span className="nav-num">03</span>
           </a>
-          <a href="#contact" onClick={closeMenu}>
-            <span>Contact</span>
+          <a href="#comments" onClick={closeMenu}>
+            <span>கருத்துகள்</span>
             <span className="nav-num">04</span>
           </a>
-          <button type="button" onClick={handleHelpClick}>
-            <span>Help Guide</span>
+          <a href="#contact" onClick={closeMenu}>
+            <span>Contact</span>
             <span className="nav-num">05</span>
-          </button>
+          </a>
 
           {phone && (
             <a

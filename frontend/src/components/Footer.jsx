@@ -1,6 +1,6 @@
 import { PhoneCall } from 'lucide-react'
 
-function Footer({ contact, onOpenHelp }) {
+function Footer({ contact }) {
   const phone = String(contact?.mainPhone || '').replace(/[^\d+]/g, '')
 
   return (
@@ -21,14 +21,8 @@ function Footer({ contact, onOpenHelp }) {
         <a href="#products">Products</a>
         <a href="#categories">Categories</a>
         <a href="#about">About</a>
+        <a href="#comments">கருத்துகள்</a>
         <a href="#contact">Contact</a>
-        <button
-          type="button"
-          onClick={onOpenHelp}
-          className="text-earth hover:text-forest-deep transition"
-        >
-          Help
-        </button>
         {phone && (
           <a
             href={`tel:${phone}`}

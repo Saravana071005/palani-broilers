@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { PhoneCall, Smartphone, Download, HelpCircle, X } from 'lucide-react'
+import { PhoneCall, Smartphone, Download, X } from 'lucide-react'
 
 function ProductModal({
   product,
@@ -8,7 +8,6 @@ function ProductModal({
   onClose,
   appOpenStatus,
   appUnavailable,
-  onNeedHelp,
   contact,
   categories,
 }) {
@@ -136,15 +135,6 @@ function ProductModal({
             >
               <Download size={18} />
               <span>செயலியை பதிவிறக்கவும் (DOWNLOAD APP)</span>
-            </button>
-
-            <button
-              type="button"
-              className="modal-action-help"
-              onClick={onNeedHelp}
-            >
-              <HelpCircle size={18} />
-              <span>உதவி வழிகாட்டி (HELP)</span>
             </button>
           </div>
 

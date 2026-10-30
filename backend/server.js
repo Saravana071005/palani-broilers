@@ -13,6 +13,7 @@ require('dotenv').config({
 const Product = require('./models/Product');
 const Contact = require('./models/Contact');
 const Category = require('./models/Category');
+const Comment = require('./models/Comment');
 
 const app = express();
 let databaseConnectionPromise;
@@ -79,6 +80,27 @@ const loginLimiter = rateLimit({
     res.status(429).json(options.message);
   }
 });
+
+const commentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: 'Too many comments submitted from this IP. Please try again later.'
+  },
+  handler: (req, res, next, options) => {
+    res.status(429).json(options.message);
+  }
+});
+
+function sanitizeText(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/<[^>]*>/g, '')
+    .replace(/[<>]/g, '')
+    .trim();
+}
 
 function getCookie(req, name) {
   const cookies = req.headers.cookie || '';
@@ -237,7 +259,7 @@ async function ensureDatabase(req, res, next) {
   }
 }
 
-app.use(['/api/products', '/api/contact'], (req, res, next) => {
+app.use(['/api/products', '/api/contact', '/api/comments'], (req, res, next) => {
   if (req.method === 'GET') return ensureDatabase(req, res, next);
   next();
 });
@@ -480,6 +502,7 @@ app.get('/', (req, res) => {
       products: '/api/products',
       categories: '/api/categories',
       contact: '/api/contact',
+      comments: '/api/comments',
       downloadApk: '/api/download-apk'
     },
     status: 'running'
@@ -1178,6 +1201,163 @@ app.delete('/api/contact/branches/:index', requireAdminOrigin, requireAdmin, ens
 
   }
 
+});
+
+
+// ============================================================
+//                   CUSTOMER COMMENTS ROUTES
+// ============================================================
+
+// Public: GET /api/comments
+app.get('/api/comments', ensureDatabase, async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const query = { status: 'approved' };
+    const [comments, total] = await Promise.all([
+      Comment.find(query, { customerName: 1, comment: 1, rating: 1, createdAt: 1 })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Comment.countDocuments(query)
+    ]);
+
+    res.json({
+      comments,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit) || 1
+    });
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'Unable to load comments at this time' });
+  }
+});
+
+// Public: POST /api/comments
+app.post('/api/comments', ensureDatabase, commentLimiter, async (req, res) => {
+  try {
+    const { customerName, comment, rating } = req.body || {};
+
+    const cleanName = sanitizeText(customerName);
+    const cleanComment = sanitizeText(comment);
+
+    if (!cleanName || cleanName.length < 2) {
+      return res.status(400).json({ message: 'பெயர் கட்டாயமாக தேவை (Name is required, minimum 2 characters)' });
+    }
+
+    if (cleanName.length > 60) {
+      return res.status(400).json({ message: 'பெயர் அதிகபட்சம் 60 எழுத்துகள் மட்டுமே இருக்க வேண்டும்' });
+    }
+
+    if (!cleanComment || cleanComment.length < 3) {
+      return res.status(400).json({ message: 'கருத்து விவரம் கட்டாயமாக தேவை (Comment text is required, minimum 3 characters)' });
+    }
+
+    if (cleanComment.length > 600) {
+      return res.status(400).json({ message: 'கருத்து அதிகபட்சம் 600 எழுத்துகள் மட்டுமே இருக்க வேண்டும்' });
+    }
+
+    let parsedRating = null;
+    if (rating !== undefined && rating !== null && rating !== '') {
+      const numRating = Number(rating);
+      if (!Number.isInteger(numRating) || numRating < 1 || numRating > 5) {
+        return res.status(400).json({ message: 'மதிப்பீடு 1 முதல் 5க்குள் இருக்க வேண்டும் (Rating must be an integer between 1 and 5)' });
+      }
+      parsedRating = numRating;
+    }
+
+    const newComment = new Comment({
+      customerName: cleanName,
+      comment: cleanComment,
+      rating: parsedRating,
+      status: 'pending'
+    });
+
+    await newComment.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'உங்கள் கருத்து வெற்றிகரமாக பெறப்பட்டது. நிர்வாகியின் சரிபார்ப்பிற்குப் பிறகு வெளியிடப்படும்.'
+    });
+  } catch (error) {
+    console.error('Error saving comment:', error);
+    res.status(500).json({ message: 'கருத்தை பதிவு செய்ய முடியவில்லை. சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.' });
+  }
+});
+
+// Admin: GET /api/admin/comments
+app.get('/api/admin/comments', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = {};
+    if (status && ['pending', 'approved', 'hidden'].includes(status)) {
+      filter.status = status;
+    }
+
+    const [comments, pendingCount, approvedCount, hiddenCount, totalCount] = await Promise.all([
+      Comment.find(filter).sort({ createdAt: -1 }).lean(),
+      Comment.countDocuments({ status: 'pending' }),
+      Comment.countDocuments({ status: 'approved' }),
+      Comment.countDocuments({ status: 'hidden' }),
+      Comment.countDocuments()
+    ]);
+
+    res.json({
+      comments,
+      stats: {
+        total: totalCount,
+        pending: pendingCount,
+        approved: approvedCount,
+        hidden: hiddenCount
+      }
+    });
+  } catch (error) {
+    console.error('Error loading admin comments:', error);
+    res.status(500).json({ message: 'Failed to retrieve comments' });
+  }
+});
+
+// Admin: PATCH /api/admin/comments/:id/status
+app.patch('/api/admin/comments/:id/status', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
+  try {
+    const { status } = req.body || {};
+    if (!['pending', 'approved', 'hidden'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Must be pending, approved, or hidden.' });
+    }
+
+    const updated = await Comment.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    res.json({ success: true, comment: updated });
+  } catch (error) {
+    console.error('Error updating comment status:', error);
+    res.status(500).json({ message: 'Failed to update comment status' });
+  }
+});
+
+// Admin: DELETE /api/admin/comments/:id
+app.delete('/api/admin/comments/:id', requireAdminOrigin, requireAdmin, ensureDatabase, async (req, res) => {
+  try {
+    const deleted = await Comment.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    res.json({ success: true, message: 'Comment deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ message: 'Failed to delete comment' });
+  }
 });
 
 

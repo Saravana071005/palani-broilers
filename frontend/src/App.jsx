@@ -5,7 +5,7 @@ import Hero from './components/Hero'
 import ProductShowcase from './components/ProductShowcase'
 import AboutSection from './components/AboutSection'
 import ContactSection from './components/ContactSection'
-import HelpGuide from './components/HelpGuide'
+import CustomerComments from './components/CustomerComments'
 import Footer from './components/Footer'
 import MobileNav from './components/MobileNav'
 import AppChoiceModal from './components/AppChoiceModal'
@@ -74,23 +74,6 @@ function App() {
     setShowModal(true)
   }
 
-  const handleDownloadApp = () => {
-    window.open(PLAY_STORE_URL, '_blank', 'noopener,noreferrer')
-  }
-
-  const handleOpenHelp = () => {
-    if (showModal) {
-      setShowModal(false)
-    }
-    window.dispatchEvent(new Event('palani-open-help'))
-    requestAnimationFrame(() => {
-      const el = document.getElementById('help')
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    })
-  }
-
   // Derive featured hero product: first in-stock product with an image
   const featuredHeroProduct = useMemo(() => {
     if (!products || products.length === 0) return null
@@ -112,7 +95,7 @@ function App() {
   return (
     <div className="app-shell">
       {/* Minimal Sticky Header */}
-      <Header contact={contact} onOpenHelp={handleOpenHelp} />
+      <Header contact={contact} />
 
       <main>
         {/* Compact Editorial Hero with 3D Logo Showcase */}
@@ -137,19 +120,19 @@ function App() {
           {/* Editorial About Section for SEO & Business Story */}
           <AboutSection contact={contact} />
 
+          {/* Customer Comments & Feedback Section */}
+          <CustomerComments />
+
           {/* Contact Section */}
           {contact && <ContactSection contact={contact} />}
 
-          {/* Compact Tamil Help Guide */}
-          <HelpGuide onDownloadApp={handleDownloadApp} contact={contact} />
-
           {/* Minimal Footer */}
-          <Footer contact={contact} onOpenHelp={handleOpenHelp} />
+          <Footer contact={contact} />
         </div>
       </main>
 
       {/* Sticky Bottom Mobile Bar */}
-      <MobileNav contact={contact} onOpenHelp={handleOpenHelp} />
+      <MobileNav contact={contact} />
 
       {/* Official Palani Broilers App Choice Modal */}
       {showModal && (
