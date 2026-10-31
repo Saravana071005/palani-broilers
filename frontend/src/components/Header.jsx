@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Menu, PhoneCall, X, Search } from 'lucide-react'
 
-function Header({ contact, onTriggerSearch }) {
+function Header({ contact, onTriggerSearch, onNavigateComments, onNavigateHome }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -33,11 +33,36 @@ function Header({ contact, onTriggerSearch }) {
     }
   }
 
+  const handleBrandClick = (e) => {
+    if (onNavigateHome) {
+      e.preventDefault()
+      onNavigateHome()
+    }
+  }
+
+  const handleCommentsClick = (e) => {
+    e.preventDefault()
+    closeMenu()
+    if (onNavigateComments) {
+      onNavigateComments()
+    } else {
+      if (window.location.pathname !== '/comments') {
+        window.history.pushState({}, '', '/comments')
+      }
+      document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
       <div className="site-header-inner">
         {/* Brand Lockup */}
-        <a href="#top" className="brand-lockup" aria-label="Palani Broilers Home">
+        <a
+          href="/"
+          className="brand-lockup"
+          aria-label="Palani Broilers Home"
+          onClick={handleBrandClick}
+        >
           <img src="/logo.png" alt="Palani Broilers - பழனி பிராய்லர்ஸ் Thanjavur Logo" />
           <div className="brand-text">
             <span className="brand-title-tamil">பழனி பிராய்லர்ஸ்</span>
@@ -50,7 +75,7 @@ function Header({ contact, onTriggerSearch }) {
           <a href="#products">Products</a>
           <a href="#categories">Categories</a>
           <a href="#about">About</a>
-          <a href="#comments">கருத்துகள்</a>
+          <a href="/comments" onClick={handleCommentsClick}>கருத்துகள்</a>
           <a href="#contact">Contact</a>
           {phone && (
             <a href={`tel:${phone}`} className="header-call-btn">
@@ -112,7 +137,7 @@ function Header({ contact, onTriggerSearch }) {
             <span>About</span>
             <span className="nav-num">03</span>
           </a>
-          <a href="#comments" onClick={closeMenu}>
+          <a href="/comments" onClick={handleCommentsClick}>
             <span>கருத்துகள்</span>
             <span className="nav-num">04</span>
           </a>

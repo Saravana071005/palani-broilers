@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import axios from 'axios'
 import Header from './components/Header'
 import Hero from './components/Hero'
@@ -25,6 +25,104 @@ function App() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(true)
   const [productsError, setProductsError] = useState(null)
 
+  // Dedicated routing state for /comments and /
+  const [currentPath, setCurrentPath] = useState(() => {
+    return typeof window !== 'undefined' ? window.location.pathname : '/'
+  })
+
+  const isCommentsPage = useMemo(() => {
+    return currentPath === '/comments' || currentPath === '/comments/'
+  }, [currentPath])
+
+  // Listen to browser Back/Forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  // Dynamic SEO Metadata for /comments and /
+  useEffect(() => {
+    const updateMeta = (selector, attr, value, tag, extraAttrs = {}) => {
+      let el = document.querySelector(selector)
+      if (el) {
+        el.setAttribute(attr, value)
+      } else if (tag) {
+        el = document.createElement(tag)
+        Object.entries(extraAttrs).forEach(([k, v]) => el.setAttribute(k, v))
+        el.setAttribute(attr, value)
+        document.head.appendChild(el)
+      }
+    }
+
+    if (isCommentsPage) {
+      document.title = 'Customer Reviews | Palani Broilers'
+      updateMeta('meta[name="description"]', 'content', 'Share your experience and read customer feedback about Palani Broilers.', 'meta', { name: 'description' })
+      updateMeta('link[rel="canonical"]', 'href', 'https://palanibroilers.store/comments', 'link', { rel: 'canonical' })
+      updateMeta('meta[property="og:title"]', 'content', 'Customer Reviews | Palani Broilers', 'meta', { property: 'og:title' })
+      updateMeta('meta[property="og:description"]', 'content', 'Share your experience and read customer feedback about Palani Broilers.', 'meta', { property: 'og:description' })
+      updateMeta('meta[property="og:url"]', 'content', 'https://palanibroilers.store/comments', 'meta', { property: 'og:url' })
+      updateMeta('meta[name="twitter:title"]', 'content', 'Customer Reviews | Palani Broilers', 'meta', { name: 'twitter:title' })
+      updateMeta('meta[name="twitter:description"]', 'content', 'Share your experience and read customer feedback about Palani Broilers.', 'meta', { name: 'twitter:description' })
+      updateMeta('meta[name="twitter:url"]', 'content', 'https://palanibroilers.store/comments', 'meta', { name: 'twitter:url' })
+    } else {
+      const defaultTitle = 'Palani Broilers - Fresh Chicken, Mutton & Seafood in Thanjavur | பழனி பிராய்லர்ஸ்'
+      const defaultDesc = 'Official website of Palani Broilers (பழனி பிராய்லர்ஸ்), Thanjavur. Farm-fresh broiler & country chicken, tender mutton, fresh sea fish, and farm eggs. Daily hygienic processing & phone orders.'
+      document.title = defaultTitle
+      updateMeta('meta[name="description"]', 'content', defaultDesc, 'meta', { name: 'description' })
+      updateMeta('link[rel="canonical"]', 'href', 'https://palanibroilers.store/', 'link', { rel: 'canonical' })
+      updateMeta('meta[property="og:title"]', 'content', defaultTitle, 'meta', { property: 'og:title' })
+      updateMeta('meta[property="og:description"]', 'content', defaultDesc, 'meta', { property: 'og:description' })
+      updateMeta('meta[property="og:url"]', 'content', 'https://palanibroilers.store/', 'meta', { property: 'og:url' })
+      updateMeta('meta[name="twitter:title"]', 'content', 'Palani Broilers - Fresh Meat & Seafood in Thanjavur', 'meta', { name: 'twitter:title' })
+      updateMeta('meta[name="twitter:description"]', 'content', 'Fresh broiler & country chicken, tender mutton, sea fish & farm eggs in Thanjavur.', 'meta', { name: 'twitter:description' })
+      updateMeta('meta[name="twitter:url"]', 'content', 'https://palanibroilers.store/', 'meta', { name: 'twitter:url' })
+    }
+  }, [isCommentsPage])
+
+  // Scroll to comments section when visiting /comments
+  useEffect(() => {
+    if (isCommentsPage) {
+      const scrollToComments = () => {
+        const commentsSection = document.getElementById('comments')
+        if (commentsSection) {
+          commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }
+
+      // Initial scroll and follow-up after catalog layout stabilizes
+      scrollToComments()
+      const t1 = setTimeout(scrollToComments, 200)
+      const t2 = setTimeout(scrollToComments, 650)
+      return () => {
+        clearTimeout(t1)
+        clearTimeout(t2)
+      }
+    }
+  }, [isCommentsPage, isLoadingProducts])
+
+  // SPA navigation handlers
+  const handleNavigateComments = useCallback(() => {
+    if (window.location.pathname !== '/comments') {
+      window.history.pushState({}, '', '/comments')
+      setCurrentPath('/comments')
+    }
+    const commentsEl = document.getElementById('comments')
+    if (commentsEl) {
+      commentsEl.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [])
+
+  const handleNavigateHome = useCallback(() => {
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', '/')
+      setCurrentPath('/')
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
   useEffect(() => {
     fetchProducts()
     fetchContact()
@@ -38,7 +136,6 @@ function App() {
     setIsLoadingProducts(true)
     setProductsError(null)
     try {
-      // Normalize category: only pass category param if it's a specific valid category, not 'all' or empty
       const isAll = !selectedCategory || selectedCategory === 'all' || selectedCategory === 'All Products'
       const params = isAll ? {} : { category: selectedCategory }
       const response = await axios.get(`${API_URL}/api/products`, { params })
@@ -74,33 +171,18 @@ function App() {
     setShowModal(true)
   }
 
-  // Derive featured hero product: first in-stock product with an image
-  const featuredHeroProduct = useMemo(() => {
-    if (!products || products.length === 0) return null
-    const inStock = products.find(
-      (p) => (p.stockStatus !== 'out-of-stock' && !p.lowStock) && p.imageUrl
-    )
-    return inStock || products[0] || null
-  }, [products])
-
-  // Category name lookup for hero
-  const featuredCategoryName = useMemo(() => {
-    if (!featuredHeroProduct) return ''
-    const match = categories.find(
-      (c) => c.slug === featuredHeroProduct.category || c._id === featuredHeroProduct.category
-    )
-    return match?.name || featuredHeroProduct.category || ''
-  }, [featuredHeroProduct, categories])
-
   return (
     <div className="app-shell">
       {/* Minimal Sticky Header */}
-      <Header contact={contact} />
+      <Header
+        contact={contact}
+        onNavigateComments={handleNavigateComments}
+        onNavigateHome={handleNavigateHome}
+      />
 
       <main>
         {/* Compact Editorial Hero with 3D Logo Showcase */}
         <Hero contact={contact} />
-
 
         {/* Product Showcase Section */}
         <div className="site-content">
@@ -120,14 +202,17 @@ function App() {
           {/* Editorial About Section for SEO & Business Story */}
           <AboutSection contact={contact} />
 
-          {/* Customer Comments & Feedback Section */}
-          <CustomerComments />
+          {/* Customer Comments & Testimonials Section */}
+          <CustomerComments isCommentsPage={isCommentsPage} />
 
           {/* Contact Section */}
           {contact && <ContactSection contact={contact} />}
 
           {/* Minimal Footer */}
-          <Footer contact={contact} />
+          <Footer
+            contact={contact}
+            onNavigateComments={handleNavigateComments}
+          />
         </div>
       </main>
 

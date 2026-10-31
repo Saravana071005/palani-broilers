@@ -107,14 +107,20 @@ function TestimonialCard({ item }) {
   )
 }
 
-function CustomerComments() {
+function CustomerComments({ isCommentsPage }) {
   const [comments, setComments] = useState([])
   const [totalComments, setTotalComments] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
 
-  // Feedback form states
-  const [showForm, setShowForm] = useState(false)
+  // Feedback form states: auto-open if on /comments route or when toggled
+  const [showForm, setShowForm] = useState(Boolean(isCommentsPage))
+
+  useEffect(() => {
+    if (isCommentsPage) {
+      setShowForm(true)
+    }
+  }, [isCommentsPage])
   const [customerName, setCustomerName] = useState('')
   const [commentText, setCommentText] = useState('')
   const [rating, setRating] = useState(5)

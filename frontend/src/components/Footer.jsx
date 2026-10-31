@@ -1,7 +1,19 @@
 import { PhoneCall } from 'lucide-react'
 
-function Footer({ contact }) {
+function Footer({ contact, onNavigateComments }) {
   const phone = String(contact?.mainPhone || '').replace(/[^\d+]/g, '')
+
+  const handleCommentsClick = (e) => {
+    e.preventDefault()
+    if (onNavigateComments) {
+      onNavigateComments()
+    } else {
+      if (window.location.pathname !== '/comments') {
+        window.history.pushState({}, '', '/comments')
+      }
+      document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   return (
     <footer className="minimal-editorial-footer">
@@ -21,7 +33,7 @@ function Footer({ contact }) {
         <a href="#products">Products</a>
         <a href="#categories">Categories</a>
         <a href="#about">About</a>
-        <a href="#comments">கருத்துகள்</a>
+        <a href="/comments" onClick={handleCommentsClick}>கருத்துகள்</a>
         <a href="#contact">Contact</a>
         {phone && (
           <a
