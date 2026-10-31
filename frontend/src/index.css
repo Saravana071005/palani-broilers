@@ -1673,6 +1673,162 @@ a {
   }
 }
 
+/* ==========================================================================
+   Google Review Success Invitation Popup
+   ========================================================================== */
+.google-review-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 30, 16, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.google-review-modal-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--sage-border);
+  border-radius: 2rem;
+  padding: clamp(1.75rem, 5vw, 2.5rem) clamp(1.25rem, 4vw, 2.25rem) clamp(1.5rem, 4vw, 2rem);
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 54px -12px rgba(18, 39, 20, 0.32), 0 4px 16px rgba(0, 0, 0, 0.06);
+  animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.google-review-modal-close {
+  position: absolute;
+  top: 1.15rem;
+  right: 1.15rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--cream-card);
+  border: 1px solid var(--sage-border);
+  color: var(--earth-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.google-review-modal-close:hover {
+  background: #ffffff;
+  color: var(--forest-deep);
+  transform: scale(1.08);
+}
+
+.google-review-celebration-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: 9999px;
+  background: rgba(26, 55, 28, 0.06);
+  border: 1px solid rgba(26, 55, 28, 0.1);
+  margin-bottom: 1.25rem;
+}
+
+.celebration-heart {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.google-review-modal-heading {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: clamp(1.25rem, 3.5vw, 1.55rem);
+  font-weight: 800;
+  color: var(--forest-deep);
+  margin: 0 0 0.65rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.google-review-modal-desc {
+  font-size: clamp(0.88rem, 2vw, 0.95rem);
+  line-height: 1.55;
+  color: var(--earth);
+  margin: 0 0 1.75rem;
+}
+
+.google-review-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 52px;
+  padding: 0.85rem 1.5rem;
+  border-radius: 9999px;
+  background: var(--forest-deep);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 20px rgba(18, 39, 20, 0.22);
+  margin-bottom: 0.85rem;
+}
+
+.google-review-cta-btn:hover {
+  background: var(--coral);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(238, 83, 47, 0.32);
+}
+
+.google-review-star-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.google-review-dismiss-btn {
+  background: transparent;
+  border: 0;
+  color: var(--earth-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.6rem 1.25rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.google-review-dismiss-btn:hover {
+  color: var(--forest-deep);
+  background: rgba(26, 55, 28, 0.05);
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .google-review-modal-card {
+    padding: 1.75rem 1.25rem 1.5rem;
+    border-radius: 1.5rem;
+  }
+
+  .google-review-cta-btn {
+    font-size: 0.92rem;
+    padding: 0.75rem 1.25rem;
+  }
+}
+
 /* Contact Section (Editorial & NO EMAIL) */
 .editorial-contact-section {
   margin: 4rem 0 2rem;

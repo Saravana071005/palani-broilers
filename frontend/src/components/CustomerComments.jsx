@@ -1,8 +1,33 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { MessageSquare, Star, Send, Sparkles, CheckCircle2, AlertCircle, User, ChevronDown, Quote, Heart } from 'lucide-react'
+import { MessageSquare, Star, Send, Sparkles, CheckCircle2, AlertCircle, User, ChevronDown, Quote, Heart, X, ExternalLink } from 'lucide-react'
 import axios from 'axios'
 
 const API_URL = 'https://palani-broilers-api.vercel.app'
+const GOOGLE_MAPS_REVIEW_URL =
+  'https://www.google.com/maps/place/palani+broilers/@10.781604,79.1561885,15z/data=!4m10!1m2!2m1!1spalani+broilers!3m6!1s0x3baab9589f4b7a05:0x8a034814bd24faf0!8m2!3d10.781604!4d79.1752429!15sCg9wYWxhbmkgYnJvaWxlcnNaESIPcGFsYW5pIGJyb2lsZXJzkgEMYnV0Y2hlcl9zaG9w4AEA!16s%2Fg%2F11rw53ltth?hl=en'
+
+function GoogleGIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3h3.86c2.26-2.09 3.685-5.17 3.685-9.09z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.26v3.09C3.27 21.3 7.33 24 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.62H1.26C.46 8.23 0 10.06 0 12s.46 3.77 1.26 5.38l4.01-3.09z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.27 2.7 1.26 6.62l4.01 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+      />
+    </svg>
+  )
+}
 
 // Curated brand avatar palettes (Forest, Coral, Sage, Ochre, Terracotta, Pine)
 const AVATAR_PALETTES = [
@@ -128,6 +153,19 @@ function CustomerComments({ isCommentsPage }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState('')
   const [submitError, setSubmitError] = useState('')
+  const [showGoogleReviewModal, setShowGoogleReviewModal] = useState(false)
+
+  // Close Google Review modal on Escape key
+  useEffect(() => {
+    if (!showGoogleReviewModal) return
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowGoogleReviewModal(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showGoogleReviewModal])
 
   // Marquee track & drag states
   const trackRef = useRef(null)
@@ -312,10 +350,14 @@ function CustomerComments({ isCommentsPage }) {
       setCommentText('')
       setRating(5)
       setHoverRating(0)
+
+      // Open Google Review invitation popup upon successful submission
+      setShowGoogleReviewModal(true)
     } catch (err) {
       console.error('Error submitting comment:', err)
       const msg = err.response?.data?.message || 'கருத்தை பதிவு செய்ய முடியவில்லை. சிறிது நேரம் கழித்து மீண்டும் முயற்சிக்கவும்.'
       setSubmitError(msg)
+      setShowGoogleReviewModal(false)
     } finally {
       setIsSubmitting(false)
     }
@@ -541,6 +583,68 @@ function CustomerComments({ isCommentsPage }) {
                   )}
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Google Review Success Invitation Popup */}
+        {showGoogleReviewModal && (
+          <div
+            className="google-review-modal-backdrop"
+            role="presentation"
+            onClick={() => setShowGoogleReviewModal(false)}
+          >
+            <div
+              className="google-review-modal-card"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="google-review-modal-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                className="google-review-modal-close"
+                onClick={() => setShowGoogleReviewModal(false)}
+                aria-label="Close dialog"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Celebration Badge */}
+              <div className="google-review-celebration-badge">
+                <span className="celebration-heart" aria-hidden="true">❤️</span>
+                <GoogleGIcon size={22} />
+              </div>
+
+              <h3 id="google-review-modal-title" className="google-review-modal-heading font-tamil">
+                நன்றி! உங்கள் கருத்துக்கு மகிழ்ச்சி ❤️
+              </h3>
+
+              <p className="google-review-modal-desc">
+                Thank you for choosing Palani Broilers. We would love to hear your feedback on Google too!
+              </p>
+
+              {/* Direct Google Review Action */}
+              <a
+                href={GOOGLE_MAPS_REVIEW_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="google-review-cta-btn"
+                onClick={() => setShowGoogleReviewModal(false)}
+              >
+                <span className="google-review-star-icon" aria-hidden="true">⭐</span>
+                <span className="font-tamil">Google-ல் Review செய்யுங்கள்</span>
+                <ExternalLink size={16} aria-hidden="true" />
+              </a>
+
+              {/* Maybe Later Dismiss */}
+              <button
+                type="button"
+                className="google-review-dismiss-btn"
+                onClick={() => setShowGoogleReviewModal(false)}
+              >
+                பிறகு செய்கிறேன் (Maybe Later)
+              </button>
             </div>
           </div>
         )}
