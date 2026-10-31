@@ -1818,10 +1818,131 @@ a {
   padding: 3rem 0 clamp(4rem, 6vw, 2.5rem);
   border-top: 1px solid var(--sage-border);
   display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.footer-connect-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--sage-border);
+  margin-bottom: 2rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.footer-app-section,
+.footer-social-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.footer-section-heading {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--forest);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.footer-google-play-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1.15rem;
+  background: #0f1e10;
+  color: #ffffff;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  text-decoration: none;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(15, 30, 16, 0.15);
+}
+
+.footer-google-play-badge:hover {
+  background: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.google-play-icon {
+  flex-shrink: 0;
+}
+
+.google-play-badge-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.google-play-badge-subtitle {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+}
+
+.google-play-badge-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.footer-social-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-social-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid var(--sage-border);
+  color: var(--forest-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(18, 39, 20, 0.04);
+  text-decoration: none;
+}
+
+.footer-social-circle:hover {
+  transform: translateY(-3px);
+}
+
+.footer-social-circle.instagram:hover {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(214, 36, 159, 0.3);
+}
+
+.footer-social-circle.facebook:hover {
+  background: #1877F2;
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 6px 16px rgba(24, 119, 242, 0.3);
+}
+
+.footer-bottom-row {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .footer-brand {
@@ -2104,7 +2225,28 @@ a {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 1rem;
+    gap: 1.5rem;
+  }
+
+  .footer-connect-row {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-app-section,
+  .footer-social-section {
+    align-items: center;
+  }
+
+  .footer-bottom-row {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
   }
 
   .mobile-sticky-action-bar {
