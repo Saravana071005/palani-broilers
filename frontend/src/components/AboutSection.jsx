@@ -15,31 +15,33 @@ function AboutSection({ contact }) {
           பழனி பிராய்லர்ஸ் பற்றி
         </h2>
         <p className="about-subtitle-en">
-          Thanjavur's Trusted Source for 100% Fresh Meat &amp; Seafood
+          Thanjavur's Trusted Source for Fresh Meat &amp; Seafood
         </p>
       </div>
 
       <div className="about-editorial-grid">
+        {/* Left Story Card */}
         <div className="about-story-card">
           <h3 className="about-card-title font-tamil">
-            தினமும் புதிய, தரமான இறைச்சி தேர்வு
+            தினமும் புதிய, தரமான இறைச்சி!
           </h3>
           <p className="about-card-paragraph">
-            <strong>பழனி பிராய்லர்ஸ் (Palani Broilers)</strong> தஞ்சாவூர் நகரில் பல ஆண்டுகளாக மக்களுக்குத் தூய்மையான, உயர்தர இறைச்சி மற்றும் கடல் உணவுகளை வழங்கி வருகிறது. பண்ணையிலிருந்து தினந்தோறும் நேரடியாகத் தேர்வு செய்யப்படும் புதிய பிராய்லர் கோழி, நாட்டுக்கோழி, மென்மையான ஆட்டுக்கறி, மற்றும் கடல்/ஆற்று மீன் வகைகள் சுகாதாரமான முறையில் வெட்டி உடனடியாக வழங்கப்படுகின்றன.
+            பழனி பிராய்லர்ஸ் தஞ்சாவூரில் தரமான கோழி, ஆட்டுக்கறி, மீன் மற்றும் முட்டைகளை வழங்குகிறது.
           </p>
           <p className="about-card-paragraph">
-            ஒவ்வொரு நாளும் சுகாதாரக் கட்டுப்பாடுகளுடன் கூடிய வெட்டு முறை, சுத்தமான நீர் கழுவல், மற்றும் சரியான வெப்பநிலை பராமரிப்புடன் வாடிக்கையாளர்களுக்குச் சிறந்த அனுபவத்தை உறுதி செய்கிறோம்.
+            சுகாதாரமான முறையில் சுத்தம் செய்யப்பட்ட புதிய இறைச்சி, நம்பிக்கையான தரத்துடன் கிடைக்கும்.
           </p>
         </div>
 
+        {/* Right Highlights Card */}
         <div className="about-highlights-card">
           <div className="about-feature-item">
             <div className="about-feature-icon">
               <ShieldCheck size={22} className="text-forest" />
             </div>
             <div>
-              <h4 className="about-feature-name">உயர்தர சுகாதாரம் (100% Hygienic)</h4>
-              <p className="about-feature-desc">அனைத்து இறைச்சிகளும் சுத்தமான முறையில் வெட்டப்பட்டு சுகாதாரமாகப் பேக் செய்யப்படுகிறது.</p>
+              <h4 className="about-feature-name">உயர்தர சுகாதாரம்</h4>
+              <p className="about-feature-desc">சுத்தமான முறையில் பதப்படுத்தப்பட்ட இறைச்சி.</p>
             </div>
           </div>
 
@@ -48,8 +50,8 @@ function AboutSection({ contact }) {
               <Award size={22} className="text-forest" />
             </div>
             <div>
-              <h4 className="about-feature-name">பண்ணை நேரடி தேர்வு (Farm Fresh)</h4>
-              <p className="about-feature-desc">உயிர் கோழி, நாட்டுக்கோழி மற்றும் பண்ணை முட்டைகள் தினசரி தரப் பரிசோதனைக்குப் பின் வழங்கப்படுகிறது.</p>
+              <h4 className="about-feature-name">பண்ணைத் தரம்</h4>
+              <p className="about-feature-desc">புத்தம் புதிய கோழி, மீன் மற்றும் முட்டைகள்.</p>
             </div>
           </div>
 
@@ -58,8 +60,8 @@ function AboutSection({ contact }) {
               <Truck size={22} className="text-forest" />
             </div>
             <div>
-              <h4 className="about-feature-name">விரைவான நேரடி ஆர்டர் (Fast Delivery)</h4>
-              <p className="about-feature-desc">தொலைபேசி மூலம் ஆர்டர் செய்து தஞ்சாவூர் கிளைகளில் பெறலாம் அல்லது உடனடி டெலிவரி வசதி பெறலாம்.</p>
+              <h4 className="about-feature-name">விரைவான டெலிவரி</h4>
+              <p className="about-feature-desc">உங்கள் ஆர்டர் நேரடியாக உங்கள் வீட்டிற்கு.</p>
             </div>
           </div>
         </div>
@@ -71,7 +73,7 @@ function AboutSection({ contact }) {
           <span className="about-pillar-tamil">கோழி இறைச்சி</span>
           <span className="about-pillar-en">Fresh Chicken</span>
           <p className="about-pillar-copy">
-            சுவையான பிராய்லர் துண்டுகள், எலும்பில்லா இறைச்சி, லெக் பீஸ் மற்றும் இயற்கை நாட்டுக்கோழி.
+            புதிய பிராய்லர் கோழி வகைகள்.
           </p>
         </div>
 
@@ -79,7 +81,7 @@ function AboutSection({ contact }) {
           <span className="about-pillar-tamil">ஆட்டுக்கறி</span>
           <span className="about-pillar-en">Tender Mutton</span>
           <p className="about-pillar-copy">
-            முழுமையாக ஆய்வு செய்யப்பட்ட தரமான இளங்கடா ஆட்டுக்கறி, ஈரல் மற்றும் எலும்பு துண்டுகள்.
+            தரமான ஆட்டிறைச்சி வகைகள்.
           </p>
         </div>
 
@@ -87,7 +89,7 @@ function AboutSection({ contact }) {
           <span className="about-pillar-tamil">மீன் &amp; கடல் உணவுகள்</span>
           <span className="about-pillar-en">Sea &amp; River Fish</span>
           <p className="about-pillar-copy">
-            வஞ்சிரம், சங்கரா, கொடுவா, இறால், நண்டு மற்றும் தரமான கருவாடு வகைகள்.
+            புதிய கடல் மற்றும் ஆற்று மீன்கள்.
           </p>
         </div>
 
@@ -95,7 +97,7 @@ function AboutSection({ contact }) {
           <span className="about-pillar-tamil">பண்ணை முட்டை</span>
           <span className="about-pillar-en">Farm Eggs</span>
           <p className="about-pillar-copy">
-            புதிய வெள்ளை முட்டை மற்றும் இயற்கை நாட்டுக்கோழி முட்டை தினசரி கிடைக்கும்.
+            புதிய நாட்டுக்கோழி மற்றும் பண்ணை முட்டைகள்.
           </p>
         </div>
       </div>
